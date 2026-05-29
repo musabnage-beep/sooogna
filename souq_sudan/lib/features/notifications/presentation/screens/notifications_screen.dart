@@ -114,9 +114,9 @@ class NotificationsScreen extends ConsumerWidget {
     final notifsAsync = ref.watch(userNotificationsProvider);
 
     if (user == null) {
-      return Scaffold(
-        appBar: const CustomAppBar(title: 'الإشعارات'),
-        body: const EmptyStateWidget(
+      return const Scaffold(
+        appBar: CustomAppBar(title: 'الإشعارات'),
+        body: EmptyStateWidget(
           icon: Icons.notifications_off_outlined,
           message: 'يجب تسجيل الدخول لعرض الإشعارات',
         ),
@@ -157,7 +157,7 @@ class NotificationsScreen extends ConsumerWidget {
                 leading: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: AppColors.primary.withOpacity(0.12),
+                    color: AppColors.primary.withValues(alpha: 0.12),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(_iconFor(n.type),

@@ -75,11 +75,15 @@ class AdminRemoteDataSource {
       try {
         final storageRef = _storage.ref('ad_images/${doc.id}');
         final items = await storageRef.listAll();
-        for (final item in items.items) await item.delete();
+        for (final item in items.items) {
+          await item.delete();
+        }
       } catch (_) {}
     }
     final reviews = await _firestore.collection('reviews').where('userId', isEqualTo: userId).get();
-    for (final doc in reviews.docs) batch.delete(doc.reference);
+    for (final doc in reviews.docs) {
+      batch.delete(doc.reference);
+    }
     batch.delete(_firestore.collection('users').doc(userId));
     await batch.commit();
     try { await _storage.ref('profile_images/$userId').delete(); } catch (_) {}
@@ -115,7 +119,9 @@ class AdminRemoteDataSource {
     try {
       final storageRef = _storage.ref('ad_images/$adId');
       final items = await storageRef.listAll();
-      for (final item in items.items) await item.delete();
+      for (final item in items.items) {
+        await item.delete();
+      }
     } catch (_) {}
     await _firestore.collection('ads').doc(adId).delete();
   }

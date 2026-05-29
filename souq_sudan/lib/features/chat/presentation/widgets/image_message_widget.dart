@@ -29,7 +29,7 @@ class ImageMessageWidget extends StatelessWidget {
     final time = DateFormat('HH:mm').format(message.createdAt);
     final bgColor = isMe ? AppColors.primary : const Color(0xFFEDEDED);
     final timeColor =
-        isMe ? Colors.white.withOpacity(0.9) : AppColors.textSecondary;
+        isMe ? Colors.white.withValues(alpha: 0.9) : AppColors.textSecondary;
     final maxWidth = MediaQuery.of(context).size.width * 0.7;
 
     return Align(

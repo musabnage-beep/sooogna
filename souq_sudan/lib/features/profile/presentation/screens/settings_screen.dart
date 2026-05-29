@@ -69,7 +69,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Future<void> _contactSupport() async {
-    final number = AppConstants.supportWhatsAppNumber;
+    const number = AppConstants.supportWhatsAppNumber;
     final uri = Uri.parse(
         'https://wa.me/$number?text=${Uri.encodeComponent('مرحباً، أحتاج للمساعدة في تطبيق سوق السودان')}');
     if (await canLaunchUrl(uri)) {

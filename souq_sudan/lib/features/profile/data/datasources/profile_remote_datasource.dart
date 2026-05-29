@@ -74,10 +74,14 @@ class ProfileRemoteDataSource {
     final batch = _firestore.batch();
     // Delete user's ads
     final ads = await _firestore.collection('ads').where('userId', isEqualTo: userId).get();
-    for (final doc in ads.docs) batch.delete(doc.reference);
+    for (final doc in ads.docs) {
+      batch.delete(doc.reference);
+    }
     // Delete user's reviews
     final reviews = await _firestore.collection('reviews').where('userId', isEqualTo: userId).get();
-    for (final doc in reviews.docs) batch.delete(doc.reference);
+    for (final doc in reviews.docs) {
+      batch.delete(doc.reference);
+    }
     // Delete user document
     batch.delete(_firestore.collection('users').doc(userId));
     await batch.commit();

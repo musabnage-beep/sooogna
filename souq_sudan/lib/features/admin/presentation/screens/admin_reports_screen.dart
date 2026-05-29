@@ -17,10 +17,10 @@ class AdminReportsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return DefaultTabController(
+    return const DefaultTabController(
       length: 2,
       child: Scaffold(
-        appBar: const CustomAppBar(
+        appBar: CustomAppBar(
           title: 'البلاغات',
           bottom: TabBar(
             labelColor: AppColors.primary,
@@ -32,7 +32,7 @@ class AdminReportsScreen extends ConsumerWidget {
             ],
           ),
         ),
-        body: const TabBarView(
+        body: TabBarView(
           children: [
             _ReportsTab(isResolved: false),
             _ReportsTab(isResolved: true),

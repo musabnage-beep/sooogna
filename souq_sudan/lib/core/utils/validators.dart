@@ -98,6 +98,6 @@ class Validators {
     if (phone.length < 8) return phone;
     final start = phone.substring(0, 4);
     final end = phone.substring(phone.length - 4);
-    return '${start}****$end';
+    return '$start****$end';
   }
 }

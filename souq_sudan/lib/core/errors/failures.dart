@@ -8,8 +8,7 @@ class ServerFailure extends Failure {
 }
 
 class NetworkFailure extends Failure {
-  const NetworkFailure([String message = 'لا يوجد اتصال بالإنترنت. تحقق من اتصالك وحاول مرة أخرى'])
-      : super(message);
+  const NetworkFailure([super.message = 'لا يوجد اتصال بالإنترنت. تحقق من اتصالك وحاول مرة أخرى']);
 }
 
 class AuthFailure extends Failure {
@@ -17,12 +16,11 @@ class AuthFailure extends Failure {
 }
 
 class PermissionFailure extends Failure {
-  const PermissionFailure([String message = 'ليس لديك صلاحية لهذا الإجراء'])
-      : super(message);
+  const PermissionFailure([super.message = 'ليس لديك صلاحية لهذا الإجراء']);
 }
 
 class NotFoundFailure extends Failure {
-  const NotFoundFailure([String message = 'العنصر غير موجود']) : super(message);
+  const NotFoundFailure([super.message = 'العنصر غير موجود']);
 }
 
 class ValidationFailure extends Failure {

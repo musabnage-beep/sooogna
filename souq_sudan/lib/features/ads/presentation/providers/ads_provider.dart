@@ -234,7 +234,7 @@ class CreateAdNotifier extends StateNotifier<CreateAdState> {
     final countResult = await _repository.getUserAdCountToday(ad.userId);
     final count = countResult.dataOrNull ?? 0;
     if (count >= 10) {
-      state = CreateAdState(error: 'لقد تجاوزت الحد المسموح من الإعلانات اليومية (10 إعلانات)');
+      state = const CreateAdState(error: 'لقد تجاوزت الحد المسموح من الإعلانات اليومية (10 إعلانات)');
       return null;
     }
 

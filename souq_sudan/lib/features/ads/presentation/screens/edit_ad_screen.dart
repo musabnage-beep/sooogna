@@ -139,7 +139,7 @@ class _EditAdScreenState extends ConsumerState<EditAdScreen> {
                   ),
                   const SizedBox(height: 8),
                   DropdownButtonFormField<String>(
-                    value: _category,
+                    initialValue: _category,
                     validator: (v) => v == null ? 'يرجى اختيار الفئة' : null,
                     decoration: const InputDecoration(labelText: 'الفئة *'),
                     items: AppConstants.categories
@@ -150,7 +150,7 @@ class _EditAdScreenState extends ConsumerState<EditAdScreen> {
                   ),
                   const SizedBox(height: 8),
                   DropdownButtonFormField<String>(
-                    value: _state,
+                    initialValue: _state,
                     validator: (v) => v == null ? 'يرجى اختيار الولاية' : null,
                     decoration:
                         const InputDecoration(labelText: 'الولاية *'),

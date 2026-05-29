@@ -37,7 +37,7 @@ class AuthRepositoryImpl implements AuthRepository {
     } on SocketException {
       return const Result.failure('لا يوجد اتصال بالإنترنت. تحقق من اتصالك وحاول مرة أخرى');
     } catch (e) {
-      return Result.failure('حدث خطأ أثناء التحقق من الرمز');
+      return const Result.failure('حدث خطأ أثناء التحقق من الرمز');
     }
   }
 
@@ -47,7 +47,7 @@ class AuthRepositoryImpl implements AuthRepository {
       final exists = await _dataSource.userExists(uid);
       return Result.success(exists);
     } catch (e) {
-      return Result.failure('خطأ في التحقق من المستخدم');
+      return const Result.failure('خطأ في التحقق من المستخدم');
     }
   }
 
@@ -69,7 +69,7 @@ class AuthRepositoryImpl implements AuthRepository {
       final model = await _dataSource.getUserById(uid);
       return Result.success(model?.toEntity());
     } catch (e) {
-      return Result.failure('خطأ في جلب بيانات المستخدم');
+      return const Result.failure('خطأ في جلب بيانات المستخدم');
     }
   }
 
@@ -84,7 +84,7 @@ class AuthRepositoryImpl implements AuthRepository {
       await _dataSource.logout();
       return const Result.success(null);
     } catch (e) {
-      return Result.failure('خطأ في تسجيل الخروج');
+      return const Result.failure('خطأ في تسجيل الخروج');
     }
   }
 

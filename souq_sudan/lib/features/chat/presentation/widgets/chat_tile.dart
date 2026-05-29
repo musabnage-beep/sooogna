@@ -27,7 +27,7 @@ class ChatTile extends StatelessWidget {
         chat.lastMessage.isEmpty ? 'ابدأ المحادثة الآن' : chat.lastMessage;
 
     return Material(
-      color: hasUnread ? AppColors.primary.withOpacity(0.04) : Colors.transparent,
+      color: hasUnread ? AppColors.primary.withValues(alpha: 0.04) : Colors.transparent,
       child: InkWell(
         onTap: onTap,
         child: Padding(
@@ -47,7 +47,7 @@ class ChatTile extends StatelessWidget {
                           fit: BoxFit.cover,
                         )
                       : Container(
-                          color: AppColors.primary.withOpacity(0.15),
+                          color: AppColors.primary.withValues(alpha: 0.15),
                           alignment: Alignment.center,
                           child: Text(
                             Helpers.getInitials(otherName),

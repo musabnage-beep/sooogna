@@ -58,11 +58,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
         automaticallyImplyLeading: false,
-        title: Row(
+        title: const Row(
           children: [
-            const Icon(Icons.storefront, color: Colors.white),
-            const SizedBox(width: 8),
-            const Text('سوق السودان', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+            Icon(Icons.storefront, color: Colors.white),
+            SizedBox(width: 8),
+            Text('سوق السودان', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
           ],
         ),
         actions: [

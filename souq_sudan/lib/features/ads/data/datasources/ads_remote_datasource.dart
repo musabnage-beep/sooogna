@@ -107,9 +107,13 @@ class AdsRemoteDataSource {
     if (keywords.isNotEmpty) {
       if (minPrice != null) results = results.where((a) => a.price >= minPrice).toList();
       if (maxPrice != null) results = results.where((a) => a.price <= maxPrice).toList();
-      if (sortBy == 'price_asc') results.sort((a, b) => a.price.compareTo(b.price));
-      else if (sortBy == 'price_desc') results.sort((a, b) => b.price.compareTo(a.price));
-      else results.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      if (sortBy == 'price_asc') {
+        results.sort((a, b) => a.price.compareTo(b.price));
+      } else if (sortBy == 'price_desc') {
+        results.sort((a, b) => b.price.compareTo(a.price));
+      } else {
+        results.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      }
     }
 
     return results;

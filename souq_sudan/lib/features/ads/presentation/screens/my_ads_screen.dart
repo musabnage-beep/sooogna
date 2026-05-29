@@ -21,9 +21,9 @@ class MyAdsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(currentUserProvider).value;
     if (user == null) {
-      return Scaffold(
-        appBar: const CustomAppBar(title: 'إعلاناتي'),
-        body: const EmptyStateWidget(
+      return const Scaffold(
+        appBar: CustomAppBar(title: 'إعلاناتي'),
+        body: EmptyStateWidget(
           icon: Icons.lock_outline,
           message: 'يرجى تسجيل الدخول لعرض إعلاناتك',
         ),
@@ -33,9 +33,9 @@ class MyAdsScreen extends ConsumerWidget {
     return DefaultTabController(
       length: 4,
       child: Scaffold(
-        appBar: CustomAppBar(
+        appBar: const CustomAppBar(
           title: 'إعلاناتي',
-          bottom: const TabBar(
+          bottom: TabBar(
             isScrollable: true,
             tabs: [
               Tab(text: 'نشطة'),

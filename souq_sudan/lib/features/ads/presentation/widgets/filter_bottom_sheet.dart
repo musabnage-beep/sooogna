@@ -131,7 +131,7 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
                     Text('الموقع', style: Theme.of(context).textTheme.titleSmall),
                     const SizedBox(height: 8),
                     DropdownButtonFormField<String>(
-                      value: _filter.location,
+                      initialValue: _filter.location,
                       decoration: const InputDecoration(hintText: 'اختر الولاية'),
                       items: [
                         const DropdownMenuItem(value: null, child: Text('الكل')),
@@ -172,19 +172,23 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
                     const SizedBox(height: 16),
                     Text('الترتيب', style: Theme.of(context).textTheme.titleSmall),
                     const SizedBox(height: 8),
-                    ...{
-                      'newest': 'الأحدث أولاً',
-                      'oldest': 'الأقدم أولاً',
-                      'price_asc': 'السعر: الأقل أولاً',
-                      'price_desc': 'السعر: الأعلى أولاً',
-                    }.entries.map((e) => RadioListTile<String>(
-                      value: e.key,
+                    RadioGroup<String>(
                       groupValue: _filter.sortBy,
-                      title: Text(e.value),
                       onChanged: (v) => setState(() => _filter = _filter.copyWith(sortBy: v)),
-                      activeColor: AppColors.primary,
-                      contentPadding: EdgeInsets.zero,
-                    )),
+                      child: Column(
+                        children: {
+                          'newest': 'الأحدث أولاً',
+                          'oldest': 'الأقدم أولاً',
+                          'price_asc': 'السعر: الأقل أولاً',
+                          'price_desc': 'السعر: الأعلى أولاً',
+                        }.entries.map((e) => RadioListTile<String>(
+                          value: e.key,
+                          title: Text(e.value),
+                          activeColor: AppColors.primary,
+                          contentPadding: EdgeInsets.zero,
+                        )).toList(),
+                      ),
+                    ),
                     const SizedBox(height: 16),
                   ],
                 ),

@@ -16,12 +16,12 @@ class AdminAdsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return DefaultTabController(
+    return const DefaultTabController(
       length: 4,
       child: Scaffold(
         appBar: CustomAppBar(
           title: 'إدارة الإعلانات',
-          bottom: const TabBar(
+          bottom: TabBar(
             isScrollable: true,
             labelColor: AppColors.primary,
             unselectedLabelColor: AppColors.textSecondary,
@@ -34,7 +34,7 @@ class AdminAdsScreen extends ConsumerWidget {
             ],
           ),
         ),
-        body: const TabBarView(
+        body: TabBarView(
           children: [
             _AdsTab(status: AdStatus.pending, showActions: true),
             _AdsTab(status: AdStatus.active, showActions: false),

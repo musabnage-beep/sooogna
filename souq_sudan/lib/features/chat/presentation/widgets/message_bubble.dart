@@ -20,7 +20,7 @@ class MessageBubble extends StatelessWidget {
     final bgColor = isMe ? AppColors.primary : const Color(0xFFEDEDED);
     final textColor = isMe ? Colors.white : AppColors.textPrimary;
     final timeColor =
-        isMe ? Colors.white.withOpacity(0.85) : AppColors.textSecondary;
+        isMe ? Colors.white.withValues(alpha: 0.85) : AppColors.textSecondary;
 
     return Align(
       alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,

@@ -40,3 +40,6 @@ Thumbs.db
 # Logs / temp
 *.log
 *.swp
+
+# Claude Code session metadata
+.claude/

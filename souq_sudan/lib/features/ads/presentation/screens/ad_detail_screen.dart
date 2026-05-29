@@ -257,7 +257,7 @@ class _AdDetailScreenState extends ConsumerState<AdDetailScreen> {
           userId: ad.userId,
           reason: 'إعلان: ${ad.title} — $reason',
         );
-    if (!mounted) return;
+    if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(ok ? 'تم إرسال البلاغ' : 'تعذر إرسال البلاغ'),
