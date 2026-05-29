@@ -1,0 +1,48 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isSelf(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isImage() {
+      return request.resource.contentType.matches('image/.*');
+    }
+
+    function isUnderSize(maxBytes) {
+      return request.resource.size < maxBytes;
+    }
+
+    // Profile images: /profile_images/{userId}
+    match /profile_images/{userId} {
+      allow read: if true;
+      allow write: if isSelf(userId) && isImage() && isUnderSize(5 * 1024 * 1024);
+      allow delete: if isSelf(userId);
+    }
+
+    // Ad images: /ad_images/{adId}/{fileName}
+    match /ad_images/{adId}/{fileName} {
+      allow read: if true;
+      allow write: if isSignedIn() && isImage() && isUnderSize(5 * 1024 * 1024);
+      allow delete: if isSignedIn();
+    }
+
+    // Chat images: /chat_images/{chatId}/{fileName}
+    match /chat_images/{chatId}/{fileName} {
+      allow read: if isSignedIn()
+        && request.auth.uid in firestore.get(/databases/(default)/documents/chats/$(chatId)).data.userIds;
+      allow write: if isSignedIn()
+        && isImage()
+        && isUnderSize(5 * 1024 * 1024)
+        && request.auth.uid in firestore.get(/databases/(default)/documents/chats/$(chatId)).data.userIds;
+      allow delete: if isSignedIn()
+        && request.auth.uid in firestore.get(/databases/(default)/documents/chats/$(chatId)).data.userIds;
+    }
+  }
+}

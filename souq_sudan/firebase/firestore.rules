@@ -1,0 +1,200 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // -----------------------------
+    // Helpers
+    // -----------------------------
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isSelf(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function userDoc(userId) {
+      return get(/databases/$(database)/documents/users/$(userId));
+    }
+
+    function isAdmin() {
+      return isSignedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && userDoc(request.auth.uid).data.role == 'admin';
+    }
+
+    function isBanned() {
+      return isSignedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && userDoc(request.auth.uid).data.isBanned == true;
+    }
+
+    function isValidString(v, minLen, maxLen) {
+      return v is string && v.size() >= minLen && v.size() <= maxLen;
+    }
+
+    // -----------------------------
+    // Users
+    // -----------------------------
+    match /users/{userId} {
+      allow read: if isSignedIn();
+
+      // Create own profile (phone auth)
+      allow create: if isSelf(userId)
+        && request.resource.data.id == userId
+        && isValidString(request.resource.data.name, 2, 50)
+        && request.resource.data.phone is string
+        && request.resource.data.role == 'user'
+        && request.resource.data.isBanned == false
+        && request.resource.data.isVerified == false;
+
+      // Self update (limited fields)
+      allow update: if isSelf(userId)
+        && !isBanned()
+        && request.resource.data.id == resource.data.id
+        && request.resource.data.phone == resource.data.phone
+        && request.resource.data.role == resource.data.role
+        && request.resource.data.isBanned == resource.data.isBanned
+        && request.resource.data.isVerified == resource.data.isVerified
+        && request.resource.data.rating == resource.data.rating
+        && request.resource.data.ratingCount == resource.data.ratingCount
+        && request.resource.data.createdAt == resource.data.createdAt;
+
+      // Admin update (anything)
+      allow update: if isAdmin();
+
+      // Only admins can delete
+      allow delete: if isAdmin();
+
+      // Per-user notifications subcollection
+      match /notifications/{notifId} {
+        allow read: if isSelf(userId);
+        allow update: if isSelf(userId)
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isRead']);
+        allow create, delete: if isAdmin();
+      }
+    }
+
+    // -----------------------------
+    // Ads
+    // -----------------------------
+    match /ads/{adId} {
+      allow read: if true;
+
+      allow create: if isSignedIn()
+        && !isBanned()
+        && request.resource.data.userId == request.auth.uid
+        && isValidString(request.resource.data.title, 3, 100)
+        && isValidString(request.resource.data.description, 10, 2000)
+        && request.resource.data.price is number
+        && request.resource.data.price >= 0
+        && request.resource.data.category is string
+        && request.resource.data.location is string
+        && request.resource.data.images is list
+        && request.resource.data.images.size() >= 1
+        && request.resource.data.images.size() <= 10
+        && request.resource.data.status == 'pending'
+        && request.resource.data.isFeatured == false
+        && request.resource.data.viewCount == 0;
+
+      // Owner update (non-moderation fields)
+      allow update: if isSignedIn()
+        && !isBanned()
+        && resource.data.userId == request.auth.uid
+        && request.resource.data.userId == resource.data.userId
+        && request.resource.data.isFeatured == resource.data.isFeatured
+        && (request.resource.data.status == resource.data.status
+            || request.resource.data.status == 'sold'
+            || request.resource.data.status == 'pending');
+
+      // View counter increment by any signed-in user
+      allow update: if isSignedIn()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['viewCount'])
+        && request.resource.data.viewCount == resource.data.viewCount + 1;
+
+      // Admin full control
+      allow update, delete: if isAdmin();
+
+      // Owner delete
+      allow delete: if isSignedIn()
+        && resource.data.userId == request.auth.uid;
+    }
+
+    // -----------------------------
+    // Chats
+    // -----------------------------
+    match /chats/{chatId} {
+      allow read: if isSignedIn()
+        && request.auth.uid in resource.data.userIds;
+
+      allow create: if isSignedIn()
+        && !isBanned()
+        && request.auth.uid in request.resource.data.userIds
+        && request.resource.data.userIds.size() == 2;
+
+      allow update: if isSignedIn()
+        && !isBanned()
+        && request.auth.uid in resource.data.userIds
+        && request.resource.data.userIds == resource.data.userIds;
+
+      allow delete: if isAdmin();
+
+      match /messages/{messageId} {
+        function chatParticipants() {
+          return get(/databases/$(database)/documents/chats/$(chatId)).data.userIds;
+        }
+
+        allow read: if isSignedIn() && request.auth.uid in chatParticipants();
+
+        allow create: if isSignedIn()
+          && !isBanned()
+          && request.auth.uid in chatParticipants()
+          && request.resource.data.senderId == request.auth.uid
+          && (request.resource.data.type == 'text' || request.resource.data.type == 'image');
+
+        // Only allow marking as read
+        allow update: if isSignedIn()
+          && request.auth.uid in chatParticipants()
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isRead'])
+          && request.resource.data.isRead == true;
+
+        allow delete: if isAdmin();
+      }
+    }
+
+    // -----------------------------
+    // Reviews
+    // -----------------------------
+    match /reviews/{reviewId} {
+      allow read: if true;
+
+      allow create: if isSignedIn()
+        && !isBanned()
+        && request.resource.data.reviewerId == request.auth.uid
+        && request.resource.data.userId != request.auth.uid
+        && request.resource.data.rating is number
+        && request.resource.data.rating >= 1
+        && request.resource.data.rating <= 5
+        && isValidString(request.resource.data.comment, 0, 500);
+
+      allow update, delete: if isAdmin()
+        || (isSignedIn() && resource.data.reviewerId == request.auth.uid);
+    }
+
+    // -----------------------------
+    // Reports
+    // -----------------------------
+    match /reports/{reportId} {
+      allow read: if isAdmin();
+
+      allow create: if isSignedIn()
+        && !isBanned()
+        && request.resource.data.reporterId == request.auth.uid
+        && isValidString(request.resource.data.reason, 1, 500)
+        && request.resource.data.isResolved == false;
+
+      allow update, delete: if isAdmin();
+    }
+  }
+}
