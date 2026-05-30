@@ -49,5 +49,11 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^4.0.0
 
+# Pin path_provider_foundation below the version that pulls in `objective_c`,
+# which requires the experimental Dart "native assets" feature and breaks the
+# web build. path_provider_foundation is Apple-only and unused on web.
+dependency_overrides:
+  path_provider_foundation: 2.4.1
+
 flutter:
   uses-material-design: true
