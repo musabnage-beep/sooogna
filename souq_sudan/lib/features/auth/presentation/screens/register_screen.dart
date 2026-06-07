@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
+import 'package:go_router/go_router.dart'; // used for context.go('/login')
 import '../providers/auth_provider.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/validators.dart';
@@ -40,8 +40,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
     if (!mounted) return;
     if (user != null) {
-      await notifier.saveFcmToken(user.id);
-      if (mounted) context.go('/home');
+      // Save token in background; router navigates automatically once
+      // currentUserProvider stream emits the new user document.
+      notifier.saveFcmToken(user.id);
     }
   }
 
