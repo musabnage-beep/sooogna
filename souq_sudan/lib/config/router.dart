@@ -41,6 +41,9 @@ const _publicRoutes = <String>{
   '/login',
   '/otp',
   '/register',
+  '/home',
+  '/search',
+  '/saved',
 };
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -63,7 +66,7 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       if (firebaseAuth == null) {
         if (_publicRoutes.contains(path)) return null;
-        // In demo mode, allow create-ad without login
+        if (path.startsWith('/category/') || path.startsWith('/ads/')) return null;
         if (AppConstants.isDemoMode && path == '/create-ad') return null;
         return '/login';
       }

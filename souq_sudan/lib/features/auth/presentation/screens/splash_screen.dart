@@ -113,27 +113,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   Future<void> _navigate() async {
     if (_navigated || !mounted) return;
     _navigated = true;
-
-    final firebaseUser = ref.read(authStateChangesProvider).value;
-    if (firebaseUser == null) {
-      if (mounted) context.go('/home');
-      return;
-    }
-
-    final userResult = await ref.read(authRepositoryProvider).getCurrentUser();
-    if (!mounted) return;
-    userResult.when(
-      success: (user) {
-        if (user == null) {
-          context.go('/register');
-        } else if (user.isBanned) {
-          context.go('/banned');
-        } else {
-          context.go('/home');
-        }
-      },
-      failure: (_, __) => context.go('/login'),
-    );
+    context.go('/home');
   }
 
   @override
