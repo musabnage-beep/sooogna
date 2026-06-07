@@ -6,7 +6,6 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/helpers.dart';
 import '../../../../core/widgets/app_error_widget.dart';
-import '../../../../core/widgets/custom_app_bar.dart';
 import '../../../../core/widgets/empty_state_widget.dart';
 import '../../../../core/widgets/loading_widget.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
@@ -39,6 +38,48 @@ AppNotification _fromDoc(DocumentSnapshot doc) {
     createdAt: ts is Timestamp ? ts.toDate() : DateTime.now(),
     isRead: (data['isRead'] as bool?) ?? false,
   );
+}
+
+class _TypeStyle {
+  final IconData icon;
+  final Color color;
+  final Color bg;
+  const _TypeStyle(this.icon, this.color, this.bg);
+}
+
+_TypeStyle _styleFor(String type) {
+  switch (type) {
+    case 'chat':
+      return const _TypeStyle(
+        Icons.chat_bubble_rounded,
+        Color(0xFF2563EB),
+        Color(0xFF1E3A5F),
+      );
+    case 'ad_status':
+      return const _TypeStyle(
+        Icons.check_circle_rounded,
+        Color(0xFF16A34A),
+        Color(0xFF1A3D2E),
+      );
+    case 'review':
+      return const _TypeStyle(
+        Icons.star_rounded,
+        Color(0xFFD97706),
+        Color(0xFF3D2E0A),
+      );
+    case 'system':
+      return const _TypeStyle(
+        Icons.campaign_rounded,
+        Color(0xFF7C3AED),
+        Color(0xFF2D1F5E),
+      );
+    default:
+      return const _TypeStyle(
+        Icons.notifications_rounded,
+        AppColors.textHint,
+        AppColors.background,
+      );
+  }
 }
 
 class NotificationsScreen extends ConsumerWidget {
@@ -95,28 +136,16 @@ class NotificationsScreen extends ConsumerWidget {
     }
   }
 
-  IconData _iconFor(String type) {
-    switch (type) {
-      case 'chat':
-        return Icons.chat_bubble_outline;
-      case 'ad_status':
-        return Icons.campaign_outlined;
-      case 'review':
-        return Icons.star_border;
-      default:
-        return Icons.notifications_outlined;
-    }
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(currentUserProvider).value;
     final notifsAsync = ref.watch(userNotificationsProvider);
 
     if (user == null) {
-      return const Scaffold(
-        appBar: CustomAppBar(title: 'الإشعارات'),
-        body: EmptyStateWidget(
+      return Scaffold(
+        backgroundColor: AppColors.background,
+        appBar: _buildAppBar(context, null, ref),
+        body: const EmptyStateWidget(
           icon: Icons.notifications_off_outlined,
           message: 'يجب تسجيل الدخول لعرض الإشعارات',
         ),
@@ -124,20 +153,12 @@ class NotificationsScreen extends ConsumerWidget {
     }
 
     return Scaffold(
-      appBar: CustomAppBar(
-        title: 'الإشعارات',
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.done_all),
-            tooltip: 'تحديد الكل كمقروء',
-            onPressed: () => _markAllAsRead(ref, user.id),
-          ),
-        ],
-      ),
+      backgroundColor: AppColors.background,
+      appBar: _buildAppBar(context, user.id, ref),
       body: notifsAsync.when(
         loading: () => const LoadingWidget(),
         error: (e, _) => AppErrorWidget(
-          message: e.toString(),
+          message: Helpers.friendlyError(e),
           onRetry: () => ref.invalidate(userNotificationsProvider),
         ),
         data: (notifs) {
@@ -148,60 +169,171 @@ class NotificationsScreen extends ConsumerWidget {
             );
           }
           return ListView.separated(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
             itemCount: notifs.length,
-            separatorBuilder: (_, __) => const Divider(height: 1),
+            separatorBuilder: (_, __) => const SizedBox(height: 10),
             itemBuilder: (_, i) {
               final n = notifs[i];
-              return ListTile(
+              return _NotificationCard(
+                notification: n,
                 onTap: () => _handleTap(context, ref, user.id, n),
-                leading: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.12),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(_iconFor(n.type),
-                      color: AppColors.primary, size: 20),
-                ),
-                title: Text(
-                  n.title,
-                  style: TextStyle(
-                    fontWeight: n.isRead ? FontWeight.w500 : FontWeight.bold,
-                  ),
-                ),
-                subtitle: Text(
-                  n.body,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                trailing: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      Helpers.timeAgo(n.createdAt),
-                      style: const TextStyle(
-                        fontSize: 11,
-                        color: AppColors.textHint,
-                      ),
-                    ),
-                    if (!n.isRead) ...[
-                      const SizedBox(height: 4),
-                      Container(
-                        width: 8,
-                        height: 8,
-                        decoration: const BoxDecoration(
-                          color: AppColors.primary,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
               );
             },
           );
         },
+      ),
+    );
+  }
+
+  PreferredSizeWidget _buildAppBar(
+    BuildContext context,
+    String? userId,
+    WidgetRef ref,
+  ) {
+    return AppBar(
+      backgroundColor: AppColors.surface,
+      elevation: 0,
+      scrolledUnderElevation: 0,
+      surfaceTintColor: AppColors.surface,
+      centerTitle: true,
+      title: const Text(
+        'الإشعارات',
+        style: TextStyle(
+          color: AppColors.textPrimary,
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      iconTheme: const IconThemeData(color: AppColors.textPrimary),
+      actions: [
+        if (userId != null)
+          TextButton(
+            onPressed: () => _markAllAsRead(ref, userId),
+            child: const Text(
+              'تحديد الكل',
+              style: TextStyle(
+                color: AppColors.primary,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        const SizedBox(width: 8),
+      ],
+      bottom: const PreferredSize(
+        preferredSize: Size.fromHeight(1),
+        child: Divider(height: 1, thickness: 1, color: AppColors.divider),
+      ),
+    );
+  }
+}
+
+class _NotificationCard extends StatelessWidget {
+  final AppNotification notification;
+  final VoidCallback onTap;
+
+  const _NotificationCard({
+    required this.notification,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final style = _styleFor(notification.type);
+    final unread = !notification.isRead;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: AppColors.cardBackground,
+            borderRadius: BorderRadius.circular(14),
+            border: unread
+                ? Border.all(color: AppColors.primary.withValues(alpha: 0.18), width: 1)
+                : null,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.05),
+                blurRadius: 6,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Colored icon square
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: style.bg,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(style.icon, color: style.color, size: 22),
+              ),
+              const SizedBox(width: 12),
+              // Body
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            notification.title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight:
+                                  unread ? FontWeight.bold : FontWeight.w600,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                        ),
+                        if (unread)
+                          Container(
+                            margin: const EdgeInsetsDirectional.only(start: 6),
+                            width: 8,
+                            height: 8,
+                            decoration: const BoxDecoration(
+                              color: AppColors.primary,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      notification.body,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 12.5,
+                        color: AppColors.textHint,
+                        height: 1.4,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      Helpers.timeAgo(notification.createdAt),
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

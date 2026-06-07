@@ -10,22 +10,41 @@ import '../../../../core/widgets/empty_state_widget.dart';
 import '../../../../core/widgets/loading_widget.dart';
 import '../../../ads/presentation/providers/ads_provider.dart';
 import '../../../ads/presentation/widgets/ad_grid_card.dart';
+import '../../../analytics/presentation/providers/analytics_provider.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../providers/profile_provider.dart';
 import '../widgets/profile_header.dart';
 import '../widgets/review_card.dart';
 import '../widgets/review_dialog.dart';
+import 'package:souq_sudan/core/utils/helpers.dart';
 
-class UserProfileScreen extends ConsumerWidget {
+class UserProfileScreen extends ConsumerStatefulWidget {
   final String userId;
 
   const UserProfileScreen({super.key, required this.userId});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<UserProfileScreen> createState() => _UserProfileScreenState();
+}
+
+class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
+  bool _visitCounted = false;
+
+  void _countVisitOnce() {
+    if (_visitCounted) return;
+    final currentUser = ref.read(currentUserProvider).value;
+    if (currentUser == null || currentUser.id == widget.userId) return;
+    _visitCounted = true;
+    ref.read(analyticsRepositoryProvider).bumpProfileVisits(widget.userId);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final userId = widget.userId;
     final userAsync = ref.watch(userByIdProvider(userId));
     final currentUser = ref.watch(currentUserProvider).value;
     final isSelf = currentUser?.id == userId;
+    if (!isSelf) _countVisitOnce();
 
     return DefaultTabController(
       length: 2,
@@ -44,7 +63,7 @@ class UserProfileScreen extends ConsumerWidget {
         body: userAsync.when(
           loading: () => const LoadingWidget(),
           error: (e, _) => AppErrorWidget(
-            message: e.toString(),
+            message: Helpers.friendlyError(e),
             onRetry: () => ref.invalidate(userByIdProvider(userId)),
           ),
           data: (user) {
@@ -81,6 +100,16 @@ class UserProfileScreen extends ConsumerWidget {
                               onPressed: currentUser == null
                                   ? null
                                   : () async {
+                                      if (currentUser.id == user.id) {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          const SnackBar(
+                                            content:
+                                                Text('لا يمكنك تقييم نفسك'),
+                                          ),
+                                        );
+                                        return;
+                                      }
                                       final hasReviewed = await ref.read(
                                         hasUserReviewedProvider((
                                           reviewerId: currentUser.id,
@@ -180,7 +209,7 @@ class UserProfileScreen extends ConsumerWidget {
     final done = await ref.read(profileNotifierProvider.notifier).reportUser(
           reporterId: currentUser.id,
           reporterName: currentUser.name,
-          userId: userId,
+          userId: widget.userId,
           reason: reason,
         );
 
@@ -204,7 +233,7 @@ class _UserAdsTab extends ConsumerWidget {
     return adsAsync.when(
       loading: () => const LoadingWidget(),
       error: (e, _) => AppErrorWidget(
-        message: e.toString(),
+        message: Helpers.friendlyError(e),
         onRetry: () => ref.invalidate(userAdsProvider(userId)),
       ),
       data: (ads) {
@@ -242,7 +271,7 @@ class _UserReviewsTab extends ConsumerWidget {
     return reviewsAsync.when(
       loading: () => const LoadingWidget(),
       error: (e, _) => AppErrorWidget(
-        message: e.toString(),
+        message: Helpers.friendlyError(e),
         onRetry: () => ref.invalidate(userReviewsProvider(userId)),
       ),
       data: (reviews) {

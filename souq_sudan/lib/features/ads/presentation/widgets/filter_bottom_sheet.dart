@@ -5,6 +5,8 @@ import '../../../../core/theme/app_theme.dart';
 class FilterState {
   final String? category;
   final String? location;
+  final String? city;
+  final bool directOwnersOnly;
   final double? minPrice;
   final double? maxPrice;
   final String sortBy;
@@ -12,15 +14,19 @@ class FilterState {
   const FilterState({
     this.category,
     this.location,
+    this.city,
+    this.directOwnersOnly = false,
     this.minPrice,
     this.maxPrice,
     this.sortBy = 'newest',
   });
 
-  FilterState copyWith({String? category, String? location, double? minPrice, double? maxPrice, String? sortBy}) {
+  FilterState copyWith({String? category, String? location, String? city, bool? directOwnersOnly, double? minPrice, double? maxPrice, String? sortBy}) {
     return FilterState(
       category: category ?? this.category,
       location: location ?? this.location,
+      city: city ?? this.city,
+      directOwnersOnly: directOwnersOnly ?? this.directOwnersOnly,
       minPrice: minPrice ?? this.minPrice,
       maxPrice: maxPrice ?? this.maxPrice,
       sortBy: sortBy ?? this.sortBy,
@@ -138,6 +144,26 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
                         ...AppConstants.sudanStates.map((s) => DropdownMenuItem(value: s, child: Text(s))),
                       ],
                       onChanged: (v) => setState(() => _filter = _filter.copyWith(location: v)),
+                    ),
+                    const SizedBox(height: 16),
+                    Text('المدينة', style: Theme.of(context).textTheme.titleSmall),
+                    const SizedBox(height: 8),
+                    DropdownButtonFormField<String>(
+                      initialValue: _filter.city,
+                      decoration: const InputDecoration(hintText: 'اختر المدينة'),
+                      items: [
+                        const DropdownMenuItem(value: null, child: Text('الكل')),
+                        ...AppConstants.sudanCities.map((c) => DropdownMenuItem(value: c, child: Text(c))),
+                      ],
+                      onChanged: (v) => setState(() => _filter = _filter.copyWith(city: v)),
+                    ),
+                    const SizedBox(height: 8),
+                    SwitchListTile(
+                      value: _filter.directOwnersOnly,
+                      onChanged: (v) => setState(() => _filter = _filter.copyWith(directOwnersOnly: v)),
+                      title: const Text('المالك مباشرة فقط'),
+                      contentPadding: EdgeInsets.zero,
+                      activeThumbColor: AppColors.primary,
                     ),
                     const SizedBox(height: 16),
                     Text('نطاق السعر (ج.س)', style: Theme.of(context).textTheme.titleSmall),

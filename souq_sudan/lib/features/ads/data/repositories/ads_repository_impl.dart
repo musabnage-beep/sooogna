@@ -76,9 +76,9 @@ class AdsRepositoryImpl implements AdsRepository {
   }
 
   @override
-  Future<Result<List<Ad>>> searchAds(String query, {String? category, String? location, double? minPrice, double? maxPrice, String? sortBy}) async {
+  Future<Result<List<Ad>>> searchAds(String query, {String? category, String? location, String? city, bool directOwnersOnly = false, double? minPrice, double? maxPrice, String? sortBy}) async {
     try {
-      final models = await _dataSource.searchAds(query, category: category, location: location, minPrice: minPrice, maxPrice: maxPrice, sortBy: sortBy);
+      final models = await _dataSource.searchAds(query, category: category, location: location, city: city, directOwnersOnly: directOwnersOnly, minPrice: minPrice, maxPrice: maxPrice, sortBy: sortBy);
       return Result.success(models.map((m) => m.toEntity()).toList());
     } catch (e) { return Result.failure(_mapFirebaseError(e)); }
   }

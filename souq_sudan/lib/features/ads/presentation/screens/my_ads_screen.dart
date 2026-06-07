@@ -14,6 +14,7 @@ import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../domain/entities/ad_entity.dart';
 import '../providers/ads_provider.dart';
 import '../widgets/ad_grid_card.dart';
+import 'package:souq_sudan/core/utils/helpers.dart';
 
 class MyAdsScreen extends ConsumerWidget {
   const MyAdsScreen({super.key});
@@ -70,7 +71,7 @@ class _AdsList extends ConsumerWidget {
     return adsAsync.when(
       loading: () => const LoadingWidget(),
       error: (e, _) => AppErrorWidget(
-        message: e.toString(),
+        message: Helpers.friendlyError(e),
         onRetry: () => ref.invalidate(userAdsProvider(userId)),
       ),
       data: (ads) {

@@ -47,11 +47,8 @@ class NotificationService {
 
     // Background handler
     FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
-
-    // Token refresh
-    _messaging.onTokenRefresh.listen((token) {
-      // Token refreshed - caller should save to Firestore
-    });
+    // Token refresh is persisted by the app entry point (main.dart), which
+    // has access to the authenticated user id.
   }
 
   Future<String?> getToken() async {

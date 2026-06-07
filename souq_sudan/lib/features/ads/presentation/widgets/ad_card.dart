@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../domain/entities/ad_entity.dart';
+import '../../../../core/enums/app_enums.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/helpers.dart';
 import '../../../../core/widgets/cached_image_widget.dart';
+import '../../../../core/widgets/owner_type_badge.dart';
 
 class AdCard extends StatelessWidget {
   final Ad ad;
@@ -110,6 +112,10 @@ class AdCard extends StatelessWidget {
                         ),
                       ],
                     ),
+                    if (ad.ownerType == OwnerType.owner) ...[
+                      const SizedBox(height: 4),
+                      OwnerTypeBadge(ownerType: ad.ownerType),
+                    ],
                   ],
                 ),
               ),

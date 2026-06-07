@@ -19,6 +19,15 @@ service firebase.storage {
       return request.resource.size < maxBytes;
     }
 
+    // True when the signed-in user owns the ad, or the ad doc doesn't exist
+    // yet (first upload happens before the ad document is created).
+    function ownsAdOrNew(adId) {
+      return isSignedIn() && (
+        !firestore.exists(/databases/(default)/documents/ads/$(adId))
+        || firestore.get(/databases/(default)/documents/ads/$(adId)).data.userId == request.auth.uid
+      );
+    }
+
     // Profile images: /profile_images/{userId}
     match /profile_images/{userId} {
       allow read: if true;
@@ -27,10 +36,12 @@ service firebase.storage {
     }
 
     // Ad images: /ad_images/{adId}/{fileName}
+    // Only the ad's owner (or the uploader before the ad doc exists) may
+    // write/delete — prevents cross-user image tampering and storage abuse.
     match /ad_images/{adId}/{fileName} {
       allow read: if true;
-      allow write: if isSignedIn() && isImage() && isUnderSize(5 * 1024 * 1024);
-      allow delete: if isSignedIn();
+      allow write: if ownsAdOrNew(adId) && isImage() && isUnderSize(5 * 1024 * 1024);
+      allow delete: if ownsAdOrNew(adId);
     }
 
     // Chat images: /chat_images/{chatId}/{fileName}
@@ -43,6 +54,44 @@ service firebase.storage {
         && request.auth.uid in firestore.get(/databases/(default)/documents/chats/$(chatId)).data.userIds;
       allow delete: if isSignedIn()
         && request.auth.uid in firestore.get(/databases/(default)/documents/chats/$(chatId)).data.userIds;
+    }
+
+    // Service portfolio images (Feature 1): /service_portfolio/{userId}/{fileName}
+    // Only the provider may write/delete their own portfolio.
+    match /service_portfolio/{userId}/{fileName} {
+      allow read: if true;
+      allow write: if isSelf(userId) && isImage() && isUnderSize(5 * 1024 * 1024);
+      allow delete: if isSelf(userId);
+    }
+
+    // True when the signed-in user owns the store, or it doesn't exist yet
+    // (logo/banner can be uploaded before the store doc is created).
+    function ownsStoreOrNew(storeId) {
+      return isSignedIn() && (
+        !firestore.exists(/databases/(default)/documents/stores/$(storeId))
+        || firestore.get(/databases/(default)/documents/stores/$(storeId)).data.ownerId == request.auth.uid
+      );
+    }
+
+    // Store logo/banner assets (Feature 7): /store_assets/{storeId}/{fileName}
+    match /store_assets/{storeId}/{fileName} {
+      allow read: if true;
+      allow write: if ownsStoreOrNew(storeId) && isImage() && isUnderSize(5 * 1024 * 1024);
+      allow delete: if ownsStoreOrNew(storeId);
+    }
+
+    // Identity verification documents (Feature 3): /verification/{userId}/{fileName}
+    // Sensitive: only the owner may write; only owner + admins may read.
+    function isAdminUser() {
+      return isSignedIn()
+        && firestore.exists(/databases/(default)/documents/users/$(request.auth.uid))
+        && firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    match /verification/{userId}/{fileName} {
+      allow read: if isSelf(userId) || isAdminUser();
+      allow write: if isSelf(userId) && isImage() && isUnderSize(5 * 1024 * 1024);
+      allow delete: if isSelf(userId) || isAdminUser();
     }
   }
 }

@@ -11,36 +11,71 @@ class AdGridCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: InkWell(
-        onTap: () => context.push('/ads/${ad.id}'),
-        borderRadius: BorderRadius.circular(12),
+    return GestureDetector(
+      onTap: () => context.push('/ads/${ad.id}'),
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppColors.cardBackground,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppColors.divider, width: 0.5),
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Image
             Stack(
               children: [
                 ClipRRect(
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
                   child: CachedImageWidget(
                     imageUrl: ad.images.isNotEmpty ? ad.images[0] : null,
-                    height: 140,
+                    height: 148,
                     width: double.infinity,
                   ),
                 ),
+                // Heart button
+                Positioned(
+                  top: 8,
+                  left: 8,
+                  child: Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.45),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.favorite_border_rounded,
+                      size: 17,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+                // Featured badge
                 if (ad.isFeatured)
                   Positioned(
-                    top: 6,
-                    right: 6,
+                    top: 8,
+                    right: 8,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
                       decoration: BoxDecoration(
-                        color: AppColors.gold,
+                        color: AppColors.primary,
                         borderRadius: BorderRadius.circular(6),
                       ),
-                      child: const Text(
-                        'مميز',
-                        style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.black87),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.star_rounded, size: 11, color: Colors.white),
+                          SizedBox(width: 2),
+                          Text(
+                            'مميز',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -70,8 +105,9 @@ class AdGridCard extends StatelessWidget {
                   ),
               ],
             ),
+            // Info
             Padding(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.fromLTRB(10, 9, 10, 10),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -79,32 +115,50 @@ class AdGridCard extends StatelessWidget {
                     ad.title,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
+                      height: 1.3,
+                    ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 5),
                   Text(
                     Helpers.formatPrice(ad.price),
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          color: AppColors.primary,
-                          fontWeight: FontWeight.bold,
-                        ),
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.primary,
+                    ),
                   ),
-                  const SizedBox(height: 2),
+                  const SizedBox(height: 5),
                   Row(
                     children: [
-                      const Icon(Icons.location_on, size: 12, color: AppColors.textSecondary),
+                      const Icon(
+                        Icons.location_on_rounded,
+                        size: 12,
+                        color: AppColors.textHint,
+                      ),
+                      const SizedBox(width: 2),
                       Expanded(
                         child: Text(
                           ad.location,
-                          style: Theme.of(context).textTheme.labelSmall,
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: AppColors.textSecondary,
+                          ),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ],
                   ),
+                  const SizedBox(height: 2),
                   Text(
                     Helpers.timeAgo(ad.createdAt),
-                    style: Theme.of(context).textTheme.labelSmall,
+                    style: const TextStyle(
+                      fontSize: 10,
+                      color: AppColors.textHint,
+                    ),
                   ),
                 ],
               ),

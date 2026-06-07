@@ -8,8 +8,10 @@ class UserModel {
   final String phone;
   final String? profileImage;
   final bool isVerified;
+  final String verifiedStatus;
   final double rating;
   final int ratingCount;
+  final int profileVisits;
   final String role;
   final bool isBanned;
   final String? banReason;
@@ -23,8 +25,10 @@ class UserModel {
     required this.phone,
     this.profileImage,
     this.isVerified = false,
+    this.verifiedStatus = 'unverified',
     this.rating = 0.0,
     this.ratingCount = 0,
+    this.profileVisits = 0,
     this.role = 'user',
     this.isBanned = false,
     this.banReason,
@@ -34,14 +38,20 @@ class UserModel {
   });
 
   factory UserModel.fromMap(Map<String, dynamic> map, String id) {
+    final isVerified = (map['isVerified'] as bool?) ?? false;
+    // Legacy docs only had isVerified; derive verifiedStatus when missing.
+    final verifiedStatus =
+        (map['verifiedStatus'] as String?) ?? (isVerified ? 'verified' : 'unverified');
     return UserModel(
       id: id,
       name: (map['name'] as String?) ?? '',
       phone: (map['phone'] as String?) ?? '',
       profileImage: map['profileImage'] as String?,
-      isVerified: (map['isVerified'] as bool?) ?? false,
+      isVerified: isVerified || verifiedStatus != 'unverified',
+      verifiedStatus: verifiedStatus,
       rating: ((map['rating'] as num?) ?? 0).toDouble(),
       ratingCount: (map['ratingCount'] as int?) ?? 0,
+      profileVisits: (map['profileVisits'] as int?) ?? 0,
       role: (map['role'] as String?) ?? 'user',
       isBanned: (map['isBanned'] as bool?) ?? false,
       banReason: map['banReason'] as String?,
@@ -62,8 +72,10 @@ class UserModel {
       'phone': phone,
       'profileImage': profileImage,
       'isVerified': isVerified,
+      'verifiedStatus': verifiedStatus,
       'rating': rating,
       'ratingCount': ratingCount,
+      'profileVisits': profileVisits,
       'role': role,
       'isBanned': isBanned,
       'banReason': banReason,
@@ -80,8 +92,10 @@ class UserModel {
       phone: phone,
       profileImage: profileImage,
       isVerified: isVerified,
+      verifiedStatus: VerifiedStatusExtension.fromString(verifiedStatus),
       rating: rating,
       ratingCount: ratingCount,
+      profileVisits: profileVisits,
       role: UserRoleExtension.fromString(role),
       isBanned: isBanned,
       banReason: banReason,
@@ -97,9 +111,11 @@ class UserModel {
       name: user.name,
       phone: user.phone,
       profileImage: user.profileImage,
-      isVerified: user.isVerified,
+      isVerified: user.isVerified || user.verifiedStatus.isVerified,
+      verifiedStatus: user.verifiedStatus.value,
       rating: user.rating,
       ratingCount: user.ratingCount,
+      profileVisits: user.profileVisits,
       role: user.role.value,
       isBanned: user.isBanned,
       banReason: user.banReason,

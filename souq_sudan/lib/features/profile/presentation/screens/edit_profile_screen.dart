@@ -131,7 +131,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       appBar: const CustomAppBar(title: 'تعديل الحساب'),
       body: userAsync.when(
         loading: () => const LoadingWidget(),
-        error: (e, _) => Center(child: Text(e.toString())),
+        error: (e, _) => Center(child: Text(Helpers.friendlyError(e))),
         data: (user) {
           if (user == null) {
             return const Center(child: Text('لا يوجد مستخدم'));

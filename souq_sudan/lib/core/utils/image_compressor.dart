@@ -56,4 +56,15 @@ class ImageCompressor {
     await tempFile.writeAsBytes(encoded);
     return tempFile;
   }
+
+  /// Deletes a file only if it is a compressor-produced temp file (recognised
+  /// by the `_compressed.jpg` suffix), so callers can clean up after upload
+  /// without ever deleting the user's original image.
+  static Future<void> deleteIfTemp(File file) async {
+    if (file.path.endsWith('_compressed.jpg')) {
+      try {
+        await file.delete();
+      } catch (_) {}
+    }
+  }
 }

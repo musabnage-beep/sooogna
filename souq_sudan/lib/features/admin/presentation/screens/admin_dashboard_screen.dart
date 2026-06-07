@@ -8,6 +8,7 @@ import '../../../../core/widgets/custom_app_bar.dart';
 import '../../../../core/widgets/loading_widget.dart';
 import '../providers/admin_provider.dart';
 import '../widgets/stat_card.dart';
+import 'package:souq_sudan/core/utils/helpers.dart';
 
 class AdminDashboardScreen extends ConsumerWidget {
   const AdminDashboardScreen({super.key});
@@ -23,7 +24,7 @@ class AdminDashboardScreen extends ConsumerWidget {
         child: statsAsync.when(
           loading: () => const LoadingWidget(),
           error: (e, _) => AppErrorWidget(
-            message: e.toString(),
+            message: Helpers.friendlyError(e),
             onRetry: () => ref.invalidate(dashboardStatsProvider),
           ),
           data: (stats) {
@@ -104,6 +105,14 @@ class AdminDashboardScreen extends ConsumerWidget {
                         title: const Text('البلاغات'),
                         trailing: const Icon(Icons.chevron_left),
                         onTap: () => context.push('/admin/reports'),
+                      ),
+                      const Divider(height: 1),
+                      ListTile(
+                        leading: const Icon(Icons.verified_outlined,
+                            color: AppColors.verifiedBlue),
+                        title: const Text('طلبات التوثيق'),
+                        trailing: const Icon(Icons.chevron_left),
+                        onTap: () => context.push('/admin/verifications'),
                       ),
                     ],
                   ),

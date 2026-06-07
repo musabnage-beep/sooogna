@@ -6,8 +6,10 @@ class AppUser {
   final String phone;
   final String? profileImage;
   final bool isVerified;
+  final VerifiedStatus verifiedStatus;
   final double rating;
   final int ratingCount;
+  final int profileVisits;
   final UserRole role;
   final bool isBanned;
   final String? banReason;
@@ -21,8 +23,10 @@ class AppUser {
     required this.phone,
     this.profileImage,
     this.isVerified = false,
+    this.verifiedStatus = VerifiedStatus.unverified,
     this.rating = 0.0,
     this.ratingCount = 0,
+    this.profileVisits = 0,
     this.role = UserRole.user,
     this.isBanned = false,
     this.banReason,
@@ -39,8 +43,10 @@ class AppUser {
     String? phone,
     String? profileImage,
     bool? isVerified,
+    VerifiedStatus? verifiedStatus,
     double? rating,
     int? ratingCount,
+    int? profileVisits,
     UserRole? role,
     bool? isBanned,
     String? banReason,
@@ -54,8 +60,10 @@ class AppUser {
       phone: phone ?? this.phone,
       profileImage: profileImage ?? this.profileImage,
       isVerified: isVerified ?? this.isVerified,
+      verifiedStatus: verifiedStatus ?? this.verifiedStatus,
       rating: rating ?? this.rating,
       ratingCount: ratingCount ?? this.ratingCount,
+      profileVisits: profileVisits ?? this.profileVisits,
       role: role ?? this.role,
       isBanned: isBanned ?? this.isBanned,
       banReason: banReason ?? this.banReason,

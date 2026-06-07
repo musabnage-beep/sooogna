@@ -4,7 +4,7 @@ import { logger } from 'firebase-functions/v2';
 import { pushToUser } from './fcm';
 
 /**
- * Recomputes the rated user's `rating` / `reviewCount` whenever a review
+ * Recomputes the rated user's `rating` / `ratingCount` whenever a review
  * is created, updated or deleted. Also pushes a notification on create.
  */
 export const onReviewWritten = onDocumentWritten(
@@ -36,7 +36,7 @@ export const onReviewWritten = onDocumentWritten(
 
     await db.doc(`users/${userId}`).update({
       rating: avg,
-      reviewCount: count,
+      ratingCount: count,
     });
 
     // Push on create only

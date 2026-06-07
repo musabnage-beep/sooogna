@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -20,6 +21,18 @@ Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  // App Check (abuse protection for Firestore/Storage/Functions). The web
+  // reCAPTCHA v3 site key is injected at build time so no secret is committed:
+  //   flutter build web --dart-define=RECAPTCHA_SITE_KEY=<key>
+  // When unset (local dev), App Check is skipped so the app still runs; enable
+  // enforcement in the Firebase console only after a build ships the key.
+  const recaptchaSiteKey = String.fromEnvironment('RECAPTCHA_SITE_KEY');
+  if (recaptchaSiteKey.isNotEmpty) {
+    await FirebaseAppCheck.instance.activate(
+      webProvider: ReCaptchaV3Provider(recaptchaSiteKey),
+    );
+  }
 
   // Locale + timeago
   await initializeDateFormatting('ar', null);

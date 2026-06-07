@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart'; // used for context.go('/login')
 import '../providers/auth_provider.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/validators.dart';
+import 'package:souq_sudan/core/utils/helpers.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
@@ -56,7 +57,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         error: (error, _) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(error.toString()),
+              content: Text(Helpers.friendlyError(error)),
               backgroundColor: AppColors.error,
             ),
           );

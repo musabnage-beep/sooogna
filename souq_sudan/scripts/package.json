@@ -1,0 +1,16 @@
+{
+  "name": "souq-sudan-seo",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Offline SEO snapshot + sitemap generator for Souq Sudan (Firebase Spark / Flutter web).",
+  "scripts": {
+    "generate": "node generate_seo.mjs"
+  },
+  "dependencies": {
+    "@google-cloud/firestore": "^8.6.0",
+    "firebase": "^10.14.1",
+    "firebase-admin": "^12.0.0",
+    "google-auth-library": "^10.7.0"
+  }
+}

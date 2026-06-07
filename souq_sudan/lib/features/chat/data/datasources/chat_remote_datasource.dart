@@ -24,18 +24,24 @@ class ChatRemoteDataSource {
   }
 
   Stream<List<MessageModel>> watchMessages(String chatId) {
+    // Only stream the most recent page of messages to bound memory and reads;
+    // older history is fetched on demand via [getMessagesPage]. We query
+    // newest-first then reverse so the UI still renders oldest→newest.
     return _chatsRef
         .doc(chatId)
         .collection('messages')
-        .orderBy('createdAt', descending: false)
+        .orderBy('createdAt', descending: true)
+        .limit(AppConstants.messagesPageSize)
         .snapshots()
-        .map((snap) => snap.docs.map((d) => MessageModel.fromDocument(d)).toList());
+        .map((snap) =>
+            snap.docs.reversed.map((d) => MessageModel.fromDocument(d)).toList());
   }
 
   Future<ChatModel?> findExistingChat(String currentUserId, String otherUserId, String? adId) async {
     final snap = await _chatsRef
         .where('userIds', arrayContains: currentUserId)
         .orderBy('updatedAt', descending: true)
+        .limit(AppConstants.maxUserChatsScan)
         .get();
 
     for (final doc in snap.docs) {
@@ -109,6 +115,7 @@ class ChatRemoteDataSource {
     final storageRef = _storage.ref('chat_images/$chatId/$messageId.jpg');
     await storageRef.putFile(compressed);
     final imageUrl = await storageRef.getDownloadURL();
+    await ImageCompressor.deleteIfTemp(compressed);
 
     final batch = _firestore.batch();
     batch.set(msgRef, {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/enums/app_enums.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/helpers.dart';
 import '../../../../core/utils/validators.dart';
@@ -95,9 +96,17 @@ class ProfileHeader extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              if (user.isVerified) ...[
+              if (user.verifiedStatus.isVerified) ...[
                 const SizedBox(width: 6),
-                const Icon(Icons.verified_rounded, color: Colors.white, size: 18),
+                Icon(
+                  user.verifiedStatus == VerifiedStatus.premium
+                      ? Icons.workspace_premium
+                      : Icons.verified_rounded,
+                  color: user.verifiedStatus == VerifiedStatus.premium
+                      ? AppColors.gold
+                      : Colors.white,
+                  size: 18,
+                ),
               ],
             ],
           ),

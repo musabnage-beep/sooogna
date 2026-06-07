@@ -4,31 +4,43 @@ import 'package:google_fonts/google_fonts.dart';
 class AppColors {
   AppColors._();
 
-  static const Color primary = Color(0xFF1B5E20);
-  static const Color primaryLight = Color(0xFF4CAF50);
-  static const Color primaryDark = Color(0xFF0D3311);
-  static const Color secondary = Color(0xFFFF9800);
-  static const Color accent = Color(0xFFE65100);
-  static const Color background = Color(0xFFF5F5F5);
-  static const Color surface = Color(0xFFFFFFFF);
-  static const Color error = Color(0xFFD32F2F);
-  static const Color success = Color(0xFF388E3C);
+  // ── Sudan-flag dark theme palette (from mockup) ──
+  static const Color primary = Color(0xFF007A3D);       // Sudan green
+  static const Color primaryLight = Color(0xFF0A9D52);   // Lighter green
+  static const Color primaryDark = Color(0xFF005C2E);    // Darker green
+  static const Color secondary = Color(0xFFFFD700);      // Gold
+  static const Color accent = Color(0xFFE63946);         // Sudan red
+
+  // Backgrounds
+  static const Color background = Color(0xFF0D0D0D);     // Deepest dark
+  static const Color surface = Color(0xFF1A1A1A);        // Card / surface
+  static const Color cardBackground = Color(0xFF2E2E2E); // Elevated card
+  static const Color surfaceLight = Color(0xFF3A3A3A);   // Lighter surface
+
+  // Semantic
+  static const Color error = Color(0xFFE63946);
+  static const Color success = Color(0xFF007A3D);
   static const Color adminRed = Color(0xFFC62828);
   static const Color verifiedBlue = Color(0xFF1976D2);
   static const Color gold = Color(0xFFFFD700);
-  static const Color textPrimary = Color(0xFF212121);
-  static const Color textSecondary = Color(0xFF757575);
-  static const Color textHint = Color(0xFFBDBDBD);
-  static const Color divider = Color(0xFFE0E0E0);
-  static const Color cardBackground = Color(0xFFFFFFFF);
-  static const Color shimmerBase = Color(0xFFE0E0E0);
-  static const Color shimmerHighlight = Color(0xFFF5F5F5);
+
+  // Text
+  static const Color textPrimary = Color(0xFFEDEDED);
+  static const Color textSecondary = Color(0xFF9CA3AF);
+  static const Color textHint = Color(0xFF6B7280);
+
+  // Misc
+  static const Color divider = Color(0xFF2E2E2E);
+  static const Color shimmerBase = Color(0xFF2E2E2E);
+  static const Color shimmerHighlight = Color(0xFF3A3A3A);
 }
 
 class AppTheme {
   AppTheme._();
 
-  static ThemeData get lightTheme {
+  static ThemeData get lightTheme => darkTheme; // App is dark-only now
+
+  static ThemeData get darkTheme {
     final textTheme = GoogleFonts.cairoTextTheme(
       const TextTheme(
         displayLarge: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
@@ -51,29 +63,32 @@ class AppTheme {
 
     return ThemeData(
       useMaterial3: true,
+      brightness: Brightness.dark,
       colorScheme: ColorScheme.fromSeed(
         seedColor: AppColors.primary,
         primary: AppColors.primary,
         secondary: AppColors.secondary,
         surface: AppColors.surface,
         error: AppColors.error,
-        brightness: Brightness.light,
+        brightness: Brightness.dark,
       ),
       scaffoldBackgroundColor: AppColors.background,
       textTheme: textTheme,
       appBarTheme: AppBarTheme(
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
+        backgroundColor: AppColors.surface,
+        foregroundColor: AppColors.textPrimary,
         elevation: 0,
+        scrolledUnderElevation: 0,
+        surfaceTintColor: AppColors.surface,
         titleTextStyle: GoogleFonts.cairo(
           fontSize: 18,
           fontWeight: FontWeight.bold,
-          color: Colors.white,
+          color: AppColors.textPrimary,
         ),
-        iconTheme: const IconThemeData(color: Colors.white),
+        iconTheme: const IconThemeData(color: AppColors.textPrimary),
       ),
       cardTheme: CardThemeData(
-        elevation: 2,
+        elevation: 0,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         color: AppColors.cardBackground,
         margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -85,6 +100,7 @@ class AppTheme {
           minimumSize: const Size(double.infinity, 48),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           textStyle: GoogleFonts.cairo(fontSize: 16, fontWeight: FontWeight.w600),
+          elevation: 0,
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
@@ -104,7 +120,7 @@ class AppTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: Colors.white,
+        fillColor: AppColors.cardBackground,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
           borderSide: const BorderSide(color: AppColors.divider),
@@ -135,14 +151,14 @@ class AppTheme {
         elevation: 4,
       ),
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.surface,
         selectedItemColor: AppColors.primary,
         unselectedItemColor: AppColors.textHint,
-        elevation: 8,
+        elevation: 0,
         type: BottomNavigationBarType.fixed,
       ),
       chipTheme: ChipThemeData(
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.cardBackground,
         selectedColor: AppColors.primary,
         labelStyle: GoogleFonts.cairo(fontSize: 13),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
@@ -156,20 +172,19 @@ class AppTheme {
         labelStyle: GoogleFonts.cairo(fontSize: 14, fontWeight: FontWeight.w600),
         unselectedLabelStyle: GoogleFonts.cairo(fontSize: 14),
       ),
-    );
-  }
-
-  static ThemeData get darkTheme {
-    return lightTheme.copyWith(
-      brightness: Brightness.dark,
-      scaffoldBackgroundColor: const Color(0xFF121212),
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: AppColors.primary,
-        primary: AppColors.primaryLight,
-        secondary: AppColors.secondary,
-        surface: const Color(0xFF1E1E1E),
-        error: AppColors.error,
-        brightness: Brightness.dark,
+      dialogTheme: DialogThemeData(
+        backgroundColor: AppColors.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      ),
+      bottomSheetTheme: const BottomSheetThemeData(
+        backgroundColor: AppColors.surface,
+      ),
+      snackBarTheme: SnackBarThemeData(
+        backgroundColor: AppColors.cardBackground,
+        contentTextStyle: GoogleFonts.cairo(color: AppColors.textPrimary),
+      ),
+      progressIndicatorTheme: const ProgressIndicatorThemeData(
+        color: AppColors.primary,
       ),
     );
   }

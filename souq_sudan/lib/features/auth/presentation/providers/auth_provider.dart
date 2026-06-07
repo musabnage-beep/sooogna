@@ -95,6 +95,20 @@ class AuthNotifier extends StateNotifier<AsyncValue<void>> {
 
   Future<void> logout() async {
     state = const AsyncValue.loading();
+    // Clear this device's push token while still authenticated, so the user
+    // stops receiving notifications after signing out.
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid != null) {
+      try {
+        await _repository.updateFcmToken(uid, '');
+      } catch (_) {}
+    }
+    // Invalidate the device token at the FCM level too. Even if the Firestore
+    // write above failed (e.g. offline), the previously stored token becomes
+    // unusable, so notifications can't leak to the next user of this device.
+    try {
+      await FirebaseMessaging.instance.deleteToken();
+    } catch (_) {}
     final result = await _repository.logout();
     result.when(
       success: (_) => state = const AsyncValue.data(null),

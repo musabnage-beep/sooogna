@@ -65,7 +65,11 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     _debounce = Timer(const Duration(milliseconds: 500), () {
       if (!mounted) return;
       final trimmed = q.trim();
-      if (trimmed.isEmpty && _filter.category == null && _filter.location == null) {
+      if (trimmed.isEmpty &&
+          _filter.category == null &&
+          _filter.location == null &&
+          _filter.city == null &&
+          !_filter.directOwnersOnly) {
         ref.read(searchProvider.notifier).clear();
         return;
       }
@@ -73,6 +77,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             trimmed,
             category: _filter.category,
             location: _filter.location,
+            city: _filter.city,
+            directOwnersOnly: _filter.directOwnersOnly,
             minPrice: _filter.minPrice,
             maxPrice: _filter.maxPrice,
             sortBy: _filter.sortBy,
@@ -123,7 +129,11 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       ),
       body: Builder(
         builder: (_) {
-          if (!hasQuery && _filter.category == null && _filter.location == null) {
+          if (!hasQuery &&
+              _filter.category == null &&
+              _filter.location == null &&
+              _filter.city == null &&
+              !_filter.directOwnersOnly) {
             return _buildRecentSearches();
           }
           if (state.isLoading) return const LoadingWidget();

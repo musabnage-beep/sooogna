@@ -8,6 +8,7 @@ import '../../../../core/widgets/empty_state_widget.dart';
 import '../../../../core/widgets/loading_widget.dart';
 import '../providers/admin_provider.dart';
 import '../widgets/user_management_tile.dart';
+import 'package:souq_sudan/core/utils/helpers.dart';
 
 class AdminUsersScreen extends ConsumerStatefulWidget {
   const AdminUsersScreen({super.key});
@@ -51,7 +52,7 @@ class _AdminUsersScreenState extends ConsumerState<AdminUsersScreen> {
         child: usersAsync.when(
           loading: () => const LoadingWidget(),
           error: (e, _) => AppErrorWidget(
-            message: e.toString(),
+            message: Helpers.friendlyError(e),
             onRetry: () => ref.invalidate(allUsersProvider),
           ),
           data: (users) {

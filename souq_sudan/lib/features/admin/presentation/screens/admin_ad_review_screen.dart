@@ -67,7 +67,7 @@ class AdminAdReviewScreen extends ConsumerWidget {
       body: adAsync.when(
         loading: () => const LoadingWidget(),
         error: (e, _) => AppErrorWidget(
-          message: e.toString(),
+          message: Helpers.friendlyError(e),
           onRetry: () => ref.invalidate(adDetailProvider(adId)),
         ),
         data: (ad) {

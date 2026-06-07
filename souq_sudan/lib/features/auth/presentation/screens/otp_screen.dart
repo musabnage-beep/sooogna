@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../providers/auth_provider.dart';
 import '../widgets/otp_input_field.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/helpers.dart';
 
 class OTPScreen extends ConsumerStatefulWidget {
   final String verificationId;
@@ -18,6 +19,7 @@ class _OTPScreenState extends ConsumerState<OTPScreen> {
   final _otpController = TextEditingController();
   int _secondsRemaining = 60;
   Timer? _timer;
+  bool _verifying = false;
 
   @override
   void initState() {
@@ -43,6 +45,7 @@ class _OTPScreenState extends ConsumerState<OTPScreen> {
   }
 
   Future<void> _verifyOtp() async {
+    if (_verifying) return; // re-entrancy guard against double-submit
     final otp = _otpController.text.trim();
     if (otp.length != 6) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -54,23 +57,28 @@ class _OTPScreenState extends ConsumerState<OTPScreen> {
       return;
     }
 
-    final notifier = ref.read(authNotifierProvider.notifier);
-    final success = await notifier.verifyOtp(widget.verificationId, otp);
-    if (!mounted) return;
-
-    if (success) {
-      final uid = ref.read(firebaseAuthProvider).currentUser?.uid;
-      if (uid == null) {
-        context.go('/login');
-        return;
-      }
-      final exists = await notifier.userExists(uid);
+    _verifying = true;
+    try {
+      final notifier = ref.read(authNotifierProvider.notifier);
+      final success = await notifier.verifyOtp(widget.verificationId, otp);
       if (!mounted) return;
-      if (exists) {
-        context.go('/home');
-      } else {
-        context.go('/register');
+
+      if (success) {
+        final uid = ref.read(firebaseAuthProvider).currentUser?.uid;
+        if (uid == null) {
+          context.go('/login');
+          return;
+        }
+        final exists = await notifier.userExists(uid);
+        if (!mounted) return;
+        if (exists) {
+          context.go('/home');
+        } else {
+          context.go('/register');
+        }
       }
+    } finally {
+      if (mounted) _verifying = false;
     }
   }
 
@@ -84,7 +92,7 @@ class _OTPScreenState extends ConsumerState<OTPScreen> {
         error: (error, _) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(error.toString()),
+              content: Text(Helpers.friendlyError(error)),
               backgroundColor: AppColors.error,
             ),
           );

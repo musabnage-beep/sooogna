@@ -1,46 +1,131 @@
 <!DOCTYPE html>
-<html>
+<html lang="ar" dir="rtl">
 <head>
-  <!--
-    If you are serving your web app in a path other than the root, change the
-    href value below to reflect the base path you are serving from.
-
-    The path provided below has to start and end with a slash "/" in order for
-    it to work correctly.
-
-    For more details:
-    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
-
-    This is a placeholder for base href that will be replaced by the value of
-    the `--base-href` argument provided to `flutter build`.
-  -->
   <base href="$FLUTTER_BASE_HREF">
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="A new Flutter project.">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Primary SEO meta -->
+  <meta name="description" content="سوق السودان - منصة الإعلانات المبوبة والخدمات والمتاجر في السودان. بيع واشترِ سيارات، عقارات، جوالات، إلكترونيات وأكثر.">
+  <meta name="keywords" content="سوق السودان, إعلانات مبوبة, بيع وشراء, سيارات السودان, عقارات السودان, خدمات, متاجر, الخرطوم">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://souq-sudan.app/">
+
+  <!-- hreflang -->
+  <link rel="alternate" hreflang="ar" href="https://souq-sudan.app/">
+  <link rel="alternate" hreflang="x-default" href="https://souq-sudan.app/">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="سوق السودان">
+  <meta property="og:title" content="سوق السودان - الإعلانات المبوبة والخدمات">
+  <meta property="og:description" content="بيع واشترِ كل شيء في السودان: سيارات، عقارات، جوالات، خدمات ومتاجر.">
+  <meta property="og:url" content="https://souq-sudan.app/">
+  <meta property="og:image" content="https://souq-sudan.app/icons/Icon-512.png">
+  <meta property="og:locale" content="ar_AR">
+
+  <!-- Twitter card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="سوق السودان - الإعلانات المبوبة والخدمات">
+  <meta name="twitter:description" content="بيع واشترِ كل شيء في السودان: سيارات، عقارات، جوالات، خدمات ومتاجر.">
+  <meta name="twitter:image" content="https://souq-sudan.app/icons/Icon-512.png">
 
   <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="souq_sudan">
+  <meta name="apple-mobile-web-app-title" content="سوق السودان">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="favicon.png"/>
 
-  <title>souq_sudan</title>
+  <!-- Structured data: the marketplace website -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "سوق السودان",
+    "url": "https://souq-sudan.app/",
+    "inLanguage": "ar",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://souq-sudan.app/search?q={search_term_string}",
+      "query-input": "required name=search_term_string"
+    }
+  }
+  </script>
+
+  <title>سوق السودان - الإعلانات المبوبة والخدمات والمتاجر</title>
   <link rel="manifest" href="manifest.json">
+
+  <!-- Boot intro overlay (Remotion-rendered Sudan onboarding) -->
+  <style>
+    #intro-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 2147483647;
+      background: #0A0A0A;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 450ms ease;
+    }
+    #intro-overlay.hide { opacity: 0; pointer-events: none; }
+    #intro-overlay video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  </style>
 </head>
 <body>
-  <!--
-    You can customize the "flutter_bootstrap.js" script.
-    This is useful to provide a custom configuration to the Flutter loader
-    or to give the user feedback during the initialization process.
+  <div id="intro-overlay">
+    <video id="intro-video" autoplay muted playsinline preload="auto">
+      <source src="sudan_intro.mp4" type="video/mp4">
+    </video>
+  </div>
+  <script>
+    (function () {
+      var overlay = document.getElementById('intro-overlay');
+      var video = document.getElementById('intro-video');
+      if (!overlay) return;
+      var videoEnded = false;
+      var firstFrame = false;
+      var done = false;
 
-    For more details:
-    * https://docs.flutter.dev/platform-integration/web/initialization
-  -->
+      function hide() {
+        if (done) return;
+        // Only dismiss once the intro has played out AND Flutter has painted,
+        // so the app is never seen mid-boot. Hard timeout is a safety net.
+        if (!(videoEnded && firstFrame)) return;
+        done = true;
+        overlay.classList.add('hide');
+        setTimeout(function () {
+          if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay);
+        }, 500);
+      }
+
+      if (video) {
+        video.addEventListener('ended', function () { videoEnded = true; hide(); });
+        // If autoplay is blocked or the file is missing, don't trap the user.
+        video.addEventListener('error', function () { videoEnded = true; firstFrame = true; hide(); });
+        var p = video.play();
+        if (p && p.catch) { p.catch(function () { videoEnded = true; hide(); }); }
+      } else {
+        videoEnded = true;
+      }
+
+      window.addEventListener('flutter-first-frame', function () {
+        firstFrame = true;
+        hide();
+      });
+
+      // Safety net: never keep the overlay longer than 12s.
+      setTimeout(function () { videoEnded = true; firstFrame = true; hide(); }, 12000);
+    })();
+  </script>
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>

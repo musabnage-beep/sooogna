@@ -3,6 +3,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import '../models/report_model.dart';
 import '../../../auth/data/models/user_model.dart';
 import '../../../ads/data/models/ad_model.dart';
+import '../../../../core/constants/app_constants.dart';
 
 class AdminRemoteDataSource {
   final FirebaseFirestore _firestore;
@@ -68,10 +69,15 @@ class AdminRemoteDataSource {
   }
 
   Future<void> deleteUserWithContent(String userId) async {
-    final batch = _firestore.batch();
-    final ads = await _firestore.collection('ads').where('userId', isEqualTo: userId).get();
+    final refs = <DocumentReference>[];
+
+    final ads = await _firestore
+        .collection('ads')
+        .where('userId', isEqualTo: userId)
+        .limit(AppConstants.maxDeleteScan)
+        .get();
     for (final doc in ads.docs) {
-      batch.delete(doc.reference);
+      refs.add(doc.reference);
       try {
         final storageRef = _storage.ref('ad_images/${doc.id}');
         final items = await storageRef.listAll();
@@ -80,12 +86,32 @@ class AdminRemoteDataSource {
         }
       } catch (_) {}
     }
-    final reviews = await _firestore.collection('reviews').where('userId', isEqualTo: userId).get();
-    for (final doc in reviews.docs) {
-      batch.delete(doc.reference);
+
+    final reviews = await _firestore
+        .collection('reviews')
+        .where('userId', isEqualTo: userId)
+        .limit(AppConstants.maxDeleteScan)
+        .get();
+    refs.addAll(reviews.docs.map((d) => d.reference));
+
+    final chats = await _firestore
+        .collection('chats')
+        .where('userIds', arrayContains: userId)
+        .limit(AppConstants.maxDeleteScan)
+        .get();
+    refs.addAll(chats.docs.map((d) => d.reference));
+
+    refs.add(_firestore.collection('users').doc(userId));
+
+    const chunkSize = 450;
+    for (var i = 0; i < refs.length; i += chunkSize) {
+      final batch = _firestore.batch();
+      for (final ref in refs.skip(i).take(chunkSize)) {
+        batch.delete(ref);
+      }
+      await batch.commit();
     }
-    batch.delete(_firestore.collection('users').doc(userId));
-    await batch.commit();
+
     try { await _storage.ref('profile_images/$userId').delete(); } catch (_) {}
   }
 

@@ -29,6 +29,7 @@ class ProfileRemoteDataSource {
       await ref.putFile(compressed);
       final url = await ref.getDownloadURL();
       updates['profileImage'] = url;
+      await ImageCompressor.deleteIfTemp(compressed);
     }
     if (updates.isNotEmpty) {
       await _firestore.collection('users').doc(userId).update(updates);
@@ -36,17 +37,45 @@ class ProfileRemoteDataSource {
   }
 
   Future<void> submitReview(ReviewModel review) async {
-    final reviewRef = _firestore.collection('reviews').doc();
+    // Deterministic ID enforces one review per (reviewer, target) — matches
+    // the Firestore rule. A repeat submission edits the existing review
+    // instead of creating a duplicate.
+    final reviewId = '${review.reviewerId}_${review.userId}';
+    final reviewRef = _firestore.collection('reviews').doc(reviewId);
+    final userRef = _firestore.collection('users').doc(review.userId);
     await _firestore.runTransaction((tx) async {
-      final userDoc = await tx.get(_firestore.collection('users').doc(review.userId));
+      // All reads must precede writes in a Firestore transaction.
+      final userDoc = await tx.get(userRef);
       if (!userDoc.exists) return;
+      final existing = await tx.get(reviewRef);
+
       final data = userDoc.data()!;
       final oldRating = ((data['rating'] as num?) ?? 0).toDouble();
       final oldCount = (data['ratingCount'] as int?) ?? 0;
-      final newCount = oldCount + 1;
-      final newRating = ((oldRating * oldCount) + review.rating) / newCount;
-      tx.set(reviewRef, {...review.toMap(), 'createdAt': FieldValue.serverTimestamp()});
-      tx.update(_firestore.collection('users').doc(review.userId), {
+      final oldTotal = oldRating * oldCount;
+
+      double newTotal;
+      int newCount;
+      if (existing.exists) {
+        // Editing: swap the previous score for the new one, count unchanged.
+        final prev = ((existing.data()?['rating'] as num?) ?? 0).toDouble();
+        newCount = oldCount;
+        newTotal = oldTotal - prev + review.rating;
+      } else {
+        newCount = oldCount + 1;
+        newTotal = oldTotal + review.rating;
+      }
+      final newRating = newCount > 0 ? newTotal / newCount : 0.0;
+
+      tx.set(reviewRef, {
+        ...review.toMap(),
+        // Generalized review target (Feature 4) — backward compatible with the
+        // legacy `userId` field used by older reviews.
+        'targetType': 'user',
+        'targetId': review.userId,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+      tx.update(userRef, {
         'rating': double.parse(newRating.toStringAsFixed(1)),
         'ratingCount': newCount,
       });
@@ -71,20 +100,45 @@ class ProfileRemoteDataSource {
   }
 
   Future<void> deleteAccount(String userId) async {
-    final batch = _firestore.batch();
-    // Delete user's ads
-    final ads = await _firestore.collection('ads').where('userId', isEqualTo: userId).get();
-    for (final doc in ads.docs) {
-      batch.delete(doc.reference);
+    // Gather references first (each scan is capped to avoid unbounded reads),
+    // then delete in chunks that respect Firestore's 500-write batch limit so
+    // a user with lots of content can still be removed without a server tier.
+    final refs = <DocumentReference>[];
+
+    final ads = await _firestore
+        .collection('ads')
+        .where('userId', isEqualTo: userId)
+        .limit(AppConstants.maxDeleteScan)
+        .get();
+    refs.addAll(ads.docs.map((d) => d.reference));
+
+    final reviews = await _firestore
+        .collection('reviews')
+        .where('userId', isEqualTo: userId)
+        .limit(AppConstants.maxDeleteScan)
+        .get();
+    refs.addAll(reviews.docs.map((d) => d.reference));
+
+    // Remove chats so the user disappears from the other party's chat list and
+    // no orphaned chat docs reference a deleted account.
+    final chats = await _firestore
+        .collection('chats')
+        .where('userIds', arrayContains: userId)
+        .limit(AppConstants.maxDeleteScan)
+        .get();
+    refs.addAll(chats.docs.map((d) => d.reference));
+
+    refs.add(_firestore.collection('users').doc(userId));
+
+    const chunkSize = 450;
+    for (var i = 0; i < refs.length; i += chunkSize) {
+      final batch = _firestore.batch();
+      for (final ref in refs.skip(i).take(chunkSize)) {
+        batch.delete(ref);
+      }
+      await batch.commit();
     }
-    // Delete user's reviews
-    final reviews = await _firestore.collection('reviews').where('userId', isEqualTo: userId).get();
-    for (final doc in reviews.docs) {
-      batch.delete(doc.reference);
-    }
-    // Delete user document
-    batch.delete(_firestore.collection('users').doc(userId));
-    await batch.commit();
+
     // Delete profile image
     try {
       await _storage.ref('profile_images/$userId').delete();

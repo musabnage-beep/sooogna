@@ -10,6 +10,7 @@ import '../../../../core/widgets/loading_widget.dart';
 import '../../../profile/presentation/providers/profile_provider.dart';
 import '../../../profile/presentation/widgets/profile_header.dart';
 import '../providers/admin_provider.dart';
+import 'package:souq_sudan/core/utils/helpers.dart';
 
 class AdminUserDetailScreen extends ConsumerWidget {
   final String userId;
@@ -56,7 +57,7 @@ class AdminUserDetailScreen extends ConsumerWidget {
       body: userAsync.when(
         loading: () => const LoadingWidget(),
         error: (e, _) => AppErrorWidget(
-          message: e.toString(),
+          message: Helpers.friendlyError(e),
           onRetry: () => ref.invalidate(userByIdProvider(userId)),
         ),
         data: (user) {

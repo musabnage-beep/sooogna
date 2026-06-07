@@ -11,6 +11,7 @@ import '../../../../core/widgets/loading_widget.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../providers/admin_provider.dart';
 import '../widgets/report_card.dart';
+import 'package:souq_sudan/core/utils/helpers.dart';
 
 class AdminReportsScreen extends ConsumerWidget {
   const AdminReportsScreen({super.key});
@@ -90,7 +91,7 @@ class _ReportsTab extends ConsumerWidget {
       child: reportsAsync.when(
         loading: () => const LoadingWidget(),
         error: (e, _) => AppErrorWidget(
-          message: e.toString(),
+          message: Helpers.friendlyError(e),
           onRetry: () => ref.invalidate(reportsProvider(isResolved)),
         ),
         data: (reports) {
