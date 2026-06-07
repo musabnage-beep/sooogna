@@ -90,21 +90,25 @@ class HomeAdsNotifier extends StateNotifier<HomeAdsState> {
     state = HomeAdsState(isLoading: true, selectedState: state.selectedState);
     final result = await _repository.getAds(limit: 20, stateFilter: state.selectedState);
     result.when(
-      success: (ads) => state = state.copyWith(isLoading: false, ads: ads, hasMore: ads.length >= 20),
+      success: (page) => state = state.copyWith(
+        isLoading: false, ads: page.ads, hasMore: page.ads.length >= 20, lastDoc: page.lastDoc,
+      ),
       failure: (msg, _) => state = state.copyWith(isLoading: false, error: msg),
     );
   }
 
-  Future<void> loadMore(Object? lastDoc) async {
+  Future<void> loadMore() async {
     if (state.isLoading || !state.hasMore) return;
     state = state.copyWith(isLoading: true);
-    final result = await _repository.getAds(lastDoc: lastDoc, limit: 20, stateFilter: state.selectedState);
+    final result = await _repository.getAds(
+      lastDoc: state.lastDoc, limit: 20, stateFilter: state.selectedState,
+    );
     result.when(
-      success: (newAds) => state = state.copyWith(
+      success: (page) => state = state.copyWith(
         isLoading: false,
-        ads: [...state.ads, ...newAds],
-        hasMore: newAds.length >= 20,
-        lastDoc: lastDoc,
+        ads: [...state.ads, ...page.ads],
+        hasMore: page.ads.length >= 20,
+        lastDoc: page.lastDoc,
       ),
       failure: (msg, _) => state = state.copyWith(isLoading: false, error: msg),
     );
@@ -114,7 +118,9 @@ class HomeAdsNotifier extends StateNotifier<HomeAdsState> {
     state = HomeAdsState(isLoading: true, selectedState: selectedState);
     final result = await _repository.getAds(limit: 20, stateFilter: selectedState);
     result.when(
-      success: (ads) => state = state.copyWith(isLoading: false, ads: ads, hasMore: ads.length >= 20),
+      success: (page) => state = state.copyWith(
+        isLoading: false, ads: page.ads, hasMore: page.ads.length >= 20, lastDoc: page.lastDoc,
+      ),
       failure: (msg, _) => state = state.copyWith(isLoading: false, error: msg),
     );
   }
@@ -139,21 +145,23 @@ class CategoryAdsNotifier extends StateNotifier<HomeAdsState> {
     state = state.copyWith(isLoading: true, ads: [], lastDoc: null, hasMore: true);
     final result = await _repository.getAdsByCategory(categoryId, limit: 20);
     result.when(
-      success: (ads) => state = state.copyWith(isLoading: false, ads: ads, hasMore: ads.length >= 20),
+      success: (page) => state = state.copyWith(
+        isLoading: false, ads: page.ads, hasMore: page.ads.length >= 20, lastDoc: page.lastDoc,
+      ),
       failure: (msg, _) => state = state.copyWith(isLoading: false, error: msg),
     );
   }
 
-  Future<void> loadMore(Object? lastDoc) async {
+  Future<void> loadMore() async {
     if (state.isLoading || !state.hasMore) return;
     state = state.copyWith(isLoading: true);
-    final result = await _repository.getAdsByCategory(categoryId, lastDoc: lastDoc, limit: 20);
+    final result = await _repository.getAdsByCategory(categoryId, lastDoc: state.lastDoc, limit: 20);
     result.when(
-      success: (newAds) => state = state.copyWith(
+      success: (page) => state = state.copyWith(
         isLoading: false,
-        ads: [...state.ads, ...newAds],
-        hasMore: newAds.length >= 20,
-        lastDoc: lastDoc,
+        ads: [...state.ads, ...page.ads],
+        hasMore: page.ads.length >= 20,
+        lastDoc: page.lastDoc,
       ),
       failure: (msg, _) => state = state.copyWith(isLoading: false, error: msg),
     );

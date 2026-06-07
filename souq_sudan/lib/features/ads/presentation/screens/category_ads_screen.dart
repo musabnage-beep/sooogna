@@ -45,7 +45,7 @@ class _CategoryAdsScreenState extends ConsumerState<CategoryAdsScreen> {
       if (state.hasMore && !state.isLoading) {
         ref
             .read(categoryAdsProvider(widget.categoryId).notifier)
-            .loadMore(state.lastDoc);
+            .loadMore();
       }
     }
   }

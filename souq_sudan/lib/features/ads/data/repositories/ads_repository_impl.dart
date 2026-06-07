@@ -26,14 +26,17 @@ class AdsRepositoryImpl implements AdsRepository {
   }
 
   @override
-  Future<Result<List<Ad>>> getAds({Object? lastDoc, int limit = 20, String? stateFilter}) async {
+  Future<Result<AdsPage>> getAds({Object? lastDoc, int limit = 20, String? stateFilter}) async {
     try {
-      final models = await _dataSource.getAds(
+      final result = await _dataSource.getAds(
         lastDoc: lastDoc as DocumentSnapshot?,
         limit: limit,
         stateFilter: stateFilter,
       );
-      return Result.success(models.map((m) => m.toEntity()).toList());
+      return Result.success(AdsPage(
+        ads: result.ads.map((m) => m.toEntity()).toList(),
+        lastDoc: result.lastDoc,
+      ));
     } catch (e) { return Result.failure(_mapFirebaseError(e)); }
   }
 
@@ -62,10 +65,13 @@ class AdsRepositoryImpl implements AdsRepository {
   }
 
   @override
-  Future<Result<List<Ad>>> getAdsByCategory(String category, {Object? lastDoc, int limit = 20}) async {
+  Future<Result<AdsPage>> getAdsByCategory(String category, {Object? lastDoc, int limit = 20}) async {
     try {
-      final models = await _dataSource.getAdsByCategory(category, lastDoc: lastDoc as DocumentSnapshot?, limit: limit);
-      return Result.success(models.map((m) => m.toEntity()).toList());
+      final result = await _dataSource.getAdsByCategory(category, lastDoc: lastDoc as DocumentSnapshot?, limit: limit);
+      return Result.success(AdsPage(
+        ads: result.ads.map((m) => m.toEntity()).toList(),
+        lastDoc: result.lastDoc,
+      ));
     } catch (e) { return Result.failure(_mapFirebaseError(e)); }
   }
 

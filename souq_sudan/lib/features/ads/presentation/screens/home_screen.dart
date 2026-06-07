@@ -23,7 +23,6 @@ class HomeScreen extends ConsumerStatefulWidget {
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   final _scrollController = ScrollController();
   String? _selectedCategory;
-  Object? _lastDoc;
 
   @override
   void initState() {
@@ -41,7 +40,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent * 0.8) {
       final state = ref.read(homeAdsProvider);
       if (!state.isLoading && state.hasMore) {
-        ref.read(homeAdsProvider.notifier).loadMore(_lastDoc);
+        ref.read(homeAdsProvider.notifier).loadMore();
       }
     }
   }

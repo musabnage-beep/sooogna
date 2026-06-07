@@ -237,10 +237,12 @@ class _MyAdCard extends ConsumerWidget {
       }
     }
     final res = await ref.read(adsRepositoryProvider).bumpAd(ad.id);
+    if (res.isSuccess) {
+      await prefs.setInt(key, DateTime.now().millisecondsSinceEpoch);
+    }
     if (!context.mounted) return;
     res.when(
-      success: (_) async {
-        await prefs.setInt(key, DateTime.now().millisecondsSinceEpoch);
+      success: (_) {
         final user = ref.read(currentUserProvider).value;
         if (user != null) ref.invalidate(userAdsProvider(user.id));
         ref.read(homeAdsProvider.notifier).refresh();

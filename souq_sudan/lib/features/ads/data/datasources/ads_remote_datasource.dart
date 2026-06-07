@@ -18,7 +18,11 @@ class AdsRemoteDataSource {
 
   CollectionReference get _adsRef => _firestore.collection('ads');
 
-  Future<List<AdModel>> getAds({DocumentSnapshot? lastDoc, int limit = 20, String? stateFilter}) async {
+  Future<({List<AdModel> ads, DocumentSnapshot? lastDoc})> getAds({
+    DocumentSnapshot? lastDoc,
+    int limit = 20,
+    String? stateFilter,
+  }) async {
     Query query = _adsRef.where('status', isEqualTo: 'active');
     if (stateFilter != null && stateFilter.isNotEmpty) {
       query = query.where('adState', isEqualTo: stateFilter);
@@ -26,7 +30,11 @@ class AdsRemoteDataSource {
     query = query.orderBy('createdAt', descending: true).limit(limit);
     if (lastDoc != null) query = query.startAfterDocument(lastDoc);
     final snap = await query.get();
-    return snap.docs.map((d) => AdModel.fromDocument(d)).toList();
+    final docs = snap.docs;
+    return (
+      ads: docs.map((d) => AdModel.fromDocument(d)).toList(),
+      lastDoc: docs.isNotEmpty ? docs.last : null,
+    );
   }
 
   Future<DocumentSnapshot?> getLastDocForAds({int limit = 20}) async {
@@ -62,7 +70,9 @@ class AdsRemoteDataSource {
     return snap.docs.map((d) => AdModel.fromDocument(d)).toList();
   }
 
-  Future<List<AdModel>> getAdsByCategory(String category, {DocumentSnapshot? lastDoc, int limit = 20}) async {
+  Future<({List<AdModel> ads, DocumentSnapshot? lastDoc})> getAdsByCategory(
+    String category, {DocumentSnapshot? lastDoc, int limit = 20}
+  ) async {
     Query query = _adsRef
         .where('category', isEqualTo: category)
         .where('status', isEqualTo: 'active')
@@ -70,7 +80,11 @@ class AdsRemoteDataSource {
         .limit(limit);
     if (lastDoc != null) query = query.startAfterDocument(lastDoc);
     final snap = await query.get();
-    return snap.docs.map((d) => AdModel.fromDocument(d)).toList();
+    final docs = snap.docs;
+    return (
+      ads: docs.map((d) => AdModel.fromDocument(d)).toList(),
+      lastDoc: docs.isNotEmpty ? docs.last : null,
+    );
   }
 
   Future<List<AdModel>> searchAds(String query, {String? category, String? location, double? minPrice, double? maxPrice, String? sortBy}) async {

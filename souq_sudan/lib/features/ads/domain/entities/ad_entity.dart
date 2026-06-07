@@ -1,5 +1,11 @@
 import '../../../../core/enums/app_enums.dart';
 
+class AdsPage {
+  final List<Ad> ads;
+  final Object? lastDoc;
+  const AdsPage({required this.ads, this.lastDoc});
+}
+
 class Ad {
   final String id;
   final String title;
