@@ -6,9 +6,15 @@ class Validators {
       return 'يرجى إدخال رقم الهاتف';
     }
     final cleaned = value.replaceAll(' ', '').replaceAll('-', '');
-    final phoneRegex = RegExp(r'^\+?249[0-9]{9}$');
-    if (!phoneRegex.hasMatch(cleaned)) {
-      return 'يرجى إدخال رقم هاتف سوداني صحيح (+249XXXXXXXXX)';
+    // Accept any international E.164 number (+country_code + digits)
+    // OR Sudan local format (0XXXXXXXXX or 249XXXXXXXXX)
+    final e164Regex = RegExp(r'^\+[1-9][0-9]{6,14}$');
+    final sudanLocalRegex = RegExp(r'^0?9[0-9]{8}$'); // Sudan 09XXXXXXXX or 9XXXXXXXX
+    final sudanLongRegex = RegExp(r'^249[0-9]{9}$');   // Without +
+    if (!e164Regex.hasMatch(cleaned) &&
+        !sudanLocalRegex.hasMatch(cleaned) &&
+        !sudanLongRegex.hasMatch(cleaned)) {
+      return 'يرجى إدخال رقم هاتف صحيح مع رمز الدولة (مثال: +249XXXXXXXXX)';
     }
     return null;
   }
@@ -85,11 +91,21 @@ class Validators {
 
   static String normalizePhone(String phone) {
     final cleaned = phone.replaceAll(' ', '').replaceAll('-', '');
-    if (cleaned.startsWith('0')) {
+    // Sudan local: 09XXXXXXXX → +24909XXXXXXXX  (09 prefix)
+    if (cleaned.startsWith('09') && cleaned.length == 10) {
       return '+249${cleaned.substring(1)}';
     }
+    // Sudan without country code: 0XXXXXXXXX → +249XXXXXXXXX
+    if (cleaned.startsWith('0') && !cleaned.startsWith('00')) {
+      return '+249${cleaned.substring(1)}';
+    }
+    // Sudan without +: 249XXXXXXXXX → +249XXXXXXXXX
     if (cleaned.startsWith('249') && !cleaned.startsWith('+')) {
       return '+$cleaned';
+    }
+    // International with +: leave as-is
+    if (cleaned.startsWith('+')) {
+      return cleaned;
     }
     return cleaned;
   }

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../app_shell.dart';
+import '../core/constants/app_constants.dart';
 import '../features/admin/presentation/screens/admin_ad_review_screen.dart';
 import '../features/admin/presentation/screens/admin_ads_screen.dart';
 import '../features/admin/presentation/screens/admin_dashboard_screen.dart';
@@ -62,6 +63,8 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       if (firebaseAuth == null) {
         if (_publicRoutes.contains(path)) return null;
+        // In demo mode, allow create-ad without login
+        if (AppConstants.isDemoMode && path == '/create-ad') return null;
         return '/login';
       }
 

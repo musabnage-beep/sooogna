@@ -15,18 +15,12 @@ class PhoneInputField extends StatelessWidget {
       textDirection: TextDirection.ltr,
       decoration: const InputDecoration(
         labelText: 'رقم الهاتف',
-        hintText: '+249XXXXXXXXX',
+        hintText: '+249XXXXXXXXX أو +1XXXXXXXXXX',
         prefixIcon: Icon(Icons.phone),
         hintTextDirection: TextDirection.ltr,
+        helperText: 'أدخل رمز الدولة مثل +249 أو +1 أو +44',
+        helperMaxLines: 2,
       ),
-      onChanged: (value) {
-        if (value.isNotEmpty && !value.startsWith('+') && !value.startsWith('0')) {
-          controller.value = controller.value.copyWith(
-            text: '+249$value',
-            selection: TextSelection.collapsed(offset: '+249$value'.length),
-          );
-        }
-      },
     );
   }
 }

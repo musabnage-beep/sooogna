@@ -1,6 +1,9 @@
 class AppConstants {
   AppConstants._();
 
+  /// When true, unauthenticated users can access the create-ad screen (demo only).
+  static const bool isDemoMode = true;
+
   static const String appName = 'سوق السودان';
   static const String appVersion = '1.0.0';
   static const String supportWhatsAppNumber = '249900000000';

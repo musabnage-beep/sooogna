@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,6 +9,7 @@ import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/validators.dart';
 import '../../../../core/widgets/custom_app_bar.dart';
+import '../../../auth/domain/entities/user_entity.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../domain/entities/ad_entity.dart';
 import '../providers/ads_provider.dart';
@@ -50,6 +52,7 @@ class _CreateAdScreenState extends ConsumerState<CreateAdScreen> {
       _phonePrefilled = true;
     }
     final createState = ref.watch(createAdProvider);
+    final isDemoGuest = AppConstants.isDemoMode && user == null;
 
     ref.listen<CreateAdState>(createAdProvider, (prev, next) {
       if (next.error != null && next.error!.isNotEmpty) {
@@ -65,7 +68,30 @@ class _CreateAdScreenState extends ConsumerState<CreateAdScreen> {
     return Scaffold(
       appBar: const CustomAppBar(title: 'إعلان جديد'),
       body: SafeArea(
-        child: Form(
+        // ignore: avoid_unnecessary_containers
+        child: isDemoGuest
+            ? Column(
+                children: [
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                    color: AppColors.primary.withValues(alpha: 0.1),
+                    child: const Text(
+                      '🔔 وضع الديمو — سيتم نشر الإعلان كزائر مؤقت',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: AppColors.primary, fontSize: 13),
+                    ),
+                  ),
+                  Expanded(child: _buildForm(context, createState)),
+                ],
+              )
+            : _buildForm(context, createState),
+      ),
+    );
+  }
+
+  Widget _buildForm(BuildContext context, CreateAdState createState) {
+    return Form(
           key: _formKey,
           child: ListView(
             padding: const EdgeInsets.all(16),
@@ -151,7 +177,7 @@ class _CreateAdScreenState extends ConsumerState<CreateAdScreen> {
                 textDirection: TextDirection.ltr,
                 decoration: const InputDecoration(
                   labelText: 'رقم الهاتف *',
-                  hintText: '+249XXXXXXXXX',
+                  hintText: '+249XXXXXXXXX أو +1XXXXXXXXXX',
                 ),
               ),
               const SizedBox(height: 20),
@@ -182,9 +208,7 @@ class _CreateAdScreenState extends ConsumerState<CreateAdScreen> {
               ),
             ],
           ),
-        ),
-      ),
-    );
+        );
   }
 
   Future<void> _submit() async {
@@ -198,11 +222,33 @@ class _CreateAdScreenState extends ConsumerState<CreateAdScreen> {
       );
       return;
     }
-    final user = ref.read(currentUserProvider).value;
+    AppUser? user = ref.read(currentUserProvider).value;
+
+    // Demo mode: auto sign-in anonymously so Firebase Storage/Firestore allow the upload
+    if (user == null && AppConstants.isDemoMode) {
+      try {
+        final credential = await FirebaseAuth.instance.signInAnonymously();
+        final uid = credential.user?.uid ?? 'demo';
+        user = AppUser(
+          id: uid,
+          name: 'زائر',
+          phone: Validators.normalizePhone(_phoneCtrl.text.trim()),
+          createdAt: DateTime.now(),
+        );
+      } catch (e) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('خطأ في وضع الديمو: $e'), backgroundColor: AppColors.error),
+        );
+        return;
+      }
+    }
+
     if (user == null) {
       context.go('/login');
       return;
     }
+
     final ad = Ad(
       id: '',
       title: _titleCtrl.text.trim(),

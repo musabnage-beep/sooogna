@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import '../models/ad_model.dart';
 import '../../../../core/utils/image_compressor.dart';
+import '../../../../core/utils/helpers.dart';
 import '../../../../core/constants/app_constants.dart';
 
 class AdsRemoteDataSource {
@@ -72,8 +73,8 @@ class AdsRemoteDataSource {
   }
 
   Future<List<AdModel>> searchAds(String query, {String? category, String? location, double? minPrice, double? maxPrice, String? sortBy}) async {
-    // Search using searchKeywords array-contains-any
-    final keywords = query.toLowerCase().split(RegExp(r'\s+')).where((w) => w.length >= 2).take(10).toList();
+    // Expand query with synonyms then use arrayContainsAny
+    final keywords = Helpers.expandSearchQuery(query).take(10).toList();
 
     Query q = _adsRef.where('status', isEqualTo: 'active');
 
