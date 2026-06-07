@@ -74,6 +74,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       final appUser = appUserAsync.value;
       if (appUser == null) {
         if (path == '/register' || path == '/banned') return null;
+        // Anonymous users (demo mode) must not be forced to register
+        if (firebaseAuth.isAnonymous) return null;
         return '/register';
       }
 
