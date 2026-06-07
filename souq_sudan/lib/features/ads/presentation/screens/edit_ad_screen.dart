@@ -216,6 +216,7 @@ class _EditAdScreenState extends ConsumerState<EditAdScreen> {
       price: double.parse(_priceCtrl.text.replaceAll(',', '')),
       category: _category,
       location: '$_state - ${_cityCtrl.text.trim()}',
+      adState: _state,
       userPhone: Validators.normalizePhone(_phoneCtrl.text.trim()),
       images: _existingImages,
       updatedAt: DateTime.now(),
