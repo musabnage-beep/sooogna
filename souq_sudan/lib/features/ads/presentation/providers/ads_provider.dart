@@ -192,13 +192,13 @@ class SearchNotifier extends StateNotifier<SearchState> {
 
   SearchNotifier(this._repository) : super(const SearchState());
 
-  Future<void> search(String query, {String? category, String? location, double? minPrice, double? maxPrice, String? sortBy}) async {
-    if (query.trim().isEmpty && category == null && location == null) {
+  Future<void> search(String query, {String? category, String? location, String? city, bool directOwnersOnly = false, double? minPrice, double? maxPrice, String? sortBy}) async {
+    if (query.trim().isEmpty && category == null && location == null && city == null && !directOwnersOnly) {
       state = const SearchState();
       return;
     }
     state = state.copyWith(isLoading: true);
-    final result = await _repository.searchAds(query, category: category, location: location, minPrice: minPrice, maxPrice: maxPrice, sortBy: sortBy);
+    final result = await _repository.searchAds(query, category: category, location: location, city: city, directOwnersOnly: directOwnersOnly, minPrice: minPrice, maxPrice: maxPrice, sortBy: sortBy);
     result.when(
       success: (ads) => state = state.copyWith(isLoading: false, results: ads),
       failure: (msg, _) => state = state.copyWith(isLoading: false, error: msg),

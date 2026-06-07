@@ -63,7 +63,7 @@ class FavoriteAdModel {
       title: ad.title,
       price: ad.price,
       image: ad.images.isNotEmpty ? ad.images.first : null,
-      city: ad.city,
+      city: ad.city ?? '',
       savedAt: Timestamp.now(),
     );
   }
