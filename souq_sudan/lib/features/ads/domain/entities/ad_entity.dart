@@ -1,4 +1,5 @@
 import '../../../../core/enums/app_enums.dart';
+export '../../../../core/enums/app_enums.dart' show OwnerType;
 
 class AdsPage {
   final List<Ad> ads;
@@ -17,6 +18,8 @@ class Ad {
   final String? userName;
   final String? userPhone;
   final String location;
+  final String? city;
+  final OwnerType ownerType;
   final String? adState;
   final bool isFeatured;
   final bool featuredRequested;
@@ -41,6 +44,8 @@ class Ad {
     this.userName,
     this.userPhone,
     required this.location,
+    this.city,
+    this.ownerType = OwnerType.owner,
     this.adState,
     this.isFeatured = false,
     this.featuredRequested = false,
@@ -59,6 +64,7 @@ class Ad {
     String? id, String? title, String? description, double? price,
     String? category, List<String>? images, String? userId,
     String? userName, String? userPhone, String? location,
+    String? city, OwnerType? ownerType,
     String? adState, bool? isFeatured, bool? featuredRequested,
     AdStatus? status, String? rejectionReason,
     int? viewCount, int? favoriteCount, double? userRating,
@@ -71,6 +77,7 @@ class Ad {
       category: category ?? this.category, images: images ?? this.images,
       userId: userId ?? this.userId, userName: userName ?? this.userName,
       userPhone: userPhone ?? this.userPhone, location: location ?? this.location,
+      city: city ?? this.city, ownerType: ownerType ?? this.ownerType,
       adState: adState ?? this.adState,
       isFeatured: isFeatured ?? this.isFeatured,
       featuredRequested: featuredRequested ?? this.featuredRequested,

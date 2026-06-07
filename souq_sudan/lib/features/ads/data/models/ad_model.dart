@@ -14,6 +14,8 @@ class AdModel {
   final String? userName;
   final String? userPhone;
   final String location;
+  final String? city;
+  final String ownerType;
   final String? adState;
   final bool isFeatured;
   final bool featuredRequested;
@@ -39,6 +41,8 @@ class AdModel {
     this.userName,
     this.userPhone,
     required this.location,
+    this.city,
+    this.ownerType = 'owner',
     this.adState,
     this.isFeatured = false,
     this.featuredRequested = false,
@@ -66,6 +70,8 @@ class AdModel {
       userName: map['userName'] as String?,
       userPhone: map['userPhone'] as String?,
       location: (map['location'] as String?) ?? '',
+      city: map['city'] as String?,
+      ownerType: (map['ownerType'] as String?) ?? 'owner',
       adState: map['adState'] as String?,
       isFeatured: (map['isFeatured'] as bool?) ?? false,
       featuredRequested: (map['featuredRequested'] as bool?) ?? false,
@@ -98,6 +104,8 @@ class AdModel {
       'userName': userName,
       'userPhone': userPhone,
       'location': location,
+      'city': city,
+      'ownerType': ownerType,
       'adState': adState,
       'isFeatured': isFeatured,
       'featuredRequested': featuredRequested,
@@ -126,6 +134,8 @@ class AdModel {
       userName: userName,
       userPhone: userPhone,
       location: location,
+      city: city,
+      ownerType: OwnerTypeExtension.fromString(ownerType),
       adState: adState,
       isFeatured: isFeatured,
       featuredRequested: featuredRequested,
@@ -156,6 +166,8 @@ class AdModel {
       userName: ad.userName,
       userPhone: ad.userPhone,
       location: ad.location,
+      city: ad.city,
+      ownerType: ad.ownerType.value,
       adState: extractedState,
       isFeatured: ad.isFeatured,
       featuredRequested: ad.featuredRequested,

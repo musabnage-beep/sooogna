@@ -123,6 +123,16 @@ class Helpers {
     return '${text.substring(0, maxLength)}...';
   }
 
+  static String friendlyError(Object e) {
+    final msg = e.toString();
+    if (msg.contains('network')) return 'خطأ في الاتصال، حاول مرة أخرى';
+    if (msg.contains('permission-denied')) return 'ليس لديك صلاحية لهذا الإجراء';
+    if (msg.contains('not-found')) return 'العنصر غير موجود';
+    if (msg.contains('already-exists')) return 'العنصر موجود مسبقاً';
+    if (msg.contains('unauthenticated')) return 'يرجى تسجيل الدخول أولاً';
+    return 'حدث خطأ، حاول مرة أخرى';
+  }
+
   static void initTimeago() {
     timeago.setLocaleMessages('ar', timeago.ArMessages());
   }

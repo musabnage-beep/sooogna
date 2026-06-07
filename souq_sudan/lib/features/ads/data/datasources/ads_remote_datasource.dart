@@ -87,7 +87,7 @@ class AdsRemoteDataSource {
     );
   }
 
-  Future<List<AdModel>> searchAds(String query, {String? category, String? location, double? minPrice, double? maxPrice, String? sortBy}) async {
+  Future<List<AdModel>> searchAds(String query, {String? category, String? location, String? city, bool directOwnersOnly = false, double? minPrice, double? maxPrice, String? sortBy}) async {
     // Expand query with synonyms then use arrayContainsAny
     final keywords = Helpers.expandSearchQuery(query).take(10).toList();
 
@@ -130,6 +130,13 @@ class AdsRemoteDataSource {
       } else {
         results.sort((a, b) => b.createdAt.compareTo(a.createdAt));
       }
+    }
+
+    if (city != null && city.isNotEmpty) {
+      results = results.where((a) => a.city == city).toList();
+    }
+    if (directOwnersOnly) {
+      results = results.where((a) => a.ownerType == 'owner').toList();
     }
 
     return results;
