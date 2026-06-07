@@ -18,11 +18,12 @@ class AdsRemoteDataSource {
 
   CollectionReference get _adsRef => _firestore.collection('ads');
 
-  Future<List<AdModel>> getAds({DocumentSnapshot? lastDoc, int limit = 20}) async {
-    Query query = _adsRef
-        .where('status', isEqualTo: 'active')
-        .orderBy('createdAt', descending: true)
-        .limit(limit);
+  Future<List<AdModel>> getAds({DocumentSnapshot? lastDoc, int limit = 20, String? stateFilter}) async {
+    Query query = _adsRef.where('status', isEqualTo: 'active');
+    if (stateFilter != null && stateFilter.isNotEmpty) {
+      query = query.where('adState', isEqualTo: stateFilter);
+    }
+    query = query.orderBy('createdAt', descending: true).limit(limit);
     if (lastDoc != null) query = query.startAfterDocument(lastDoc);
     final snap = await query.get();
     return snap.docs.map((d) => AdModel.fromDocument(d)).toList();
@@ -251,5 +252,20 @@ class AdsRemoteDataSource {
 
   Future<void> toggleFeatured(String adId, bool isFeatured) async {
     await _adsRef.doc(adId).update({'isFeatured': isFeatured});
+  }
+
+  // Bump: moves ad to top by updating createdAt to now
+  Future<void> bumpAd(String adId) async {
+    await _adsRef.doc(adId).update({
+      'createdAt': FieldValue.serverTimestamp(),
+      'bumpedAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  Future<void> requestFeatured(String adId) async {
+    await _adsRef.doc(adId).update({
+      'featuredRequested': true,
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
   }
 }

@@ -45,6 +45,29 @@ class AdCard extends StatelessWidget {
                       ),
                     ),
                   ),
+                if (ad.userRating >= 4.0)
+                  Positioned(
+                    bottom: 4,
+                    left: 4,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.65),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.star, size: 10, color: AppColors.gold),
+                          const SizedBox(width: 2),
+                          Text(
+                            ad.userRating.toStringAsFixed(1),
+                            style: const TextStyle(fontSize: 9, color: Colors.white, fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
               ],
             ),
             // Content

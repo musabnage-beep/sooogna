@@ -48,6 +48,7 @@ class HomeAdsState {
   final bool hasMore;
   final String? error;
   final Object? lastDoc;
+  final String? selectedState;
 
   const HomeAdsState({
     this.ads = const [],
@@ -55,6 +56,7 @@ class HomeAdsState {
     this.hasMore = true,
     this.error,
     this.lastDoc,
+    this.selectedState,
   });
 
   HomeAdsState copyWith({
@@ -63,6 +65,8 @@ class HomeAdsState {
     bool? hasMore,
     String? error,
     Object? lastDoc,
+    String? selectedState,
+    bool clearSelectedState = false,
   }) {
     return HomeAdsState(
       ads: ads ?? this.ads,
@@ -70,6 +74,7 @@ class HomeAdsState {
       hasMore: hasMore ?? this.hasMore,
       error: error,
       lastDoc: lastDoc ?? this.lastDoc,
+      selectedState: clearSelectedState ? null : (selectedState ?? this.selectedState),
     );
   }
 }
@@ -82,16 +87,10 @@ class HomeAdsNotifier extends StateNotifier<HomeAdsState> {
   }
 
   Future<void> loadInitial() async {
-    state = state.copyWith(isLoading: true, ads: [], lastDoc: null, hasMore: true);
-    final result = await _repository.getAds(limit: 20);
+    state = HomeAdsState(isLoading: true, selectedState: state.selectedState);
+    final result = await _repository.getAds(limit: 20, stateFilter: state.selectedState);
     result.when(
-      success: (ads) {
-        state = state.copyWith(
-          isLoading: false,
-          ads: ads,
-          hasMore: ads.length >= 20,
-        );
-      },
+      success: (ads) => state = state.copyWith(isLoading: false, ads: ads, hasMore: ads.length >= 20),
       failure: (msg, _) => state = state.copyWith(isLoading: false, error: msg),
     );
   }
@@ -99,16 +98,23 @@ class HomeAdsNotifier extends StateNotifier<HomeAdsState> {
   Future<void> loadMore(Object? lastDoc) async {
     if (state.isLoading || !state.hasMore) return;
     state = state.copyWith(isLoading: true);
-    final result = await _repository.getAds(lastDoc: lastDoc, limit: 20);
+    final result = await _repository.getAds(lastDoc: lastDoc, limit: 20, stateFilter: state.selectedState);
     result.when(
-      success: (newAds) {
-        state = state.copyWith(
-          isLoading: false,
-          ads: [...state.ads, ...newAds],
-          hasMore: newAds.length >= 20,
-          lastDoc: lastDoc,
-        );
-      },
+      success: (newAds) => state = state.copyWith(
+        isLoading: false,
+        ads: [...state.ads, ...newAds],
+        hasMore: newAds.length >= 20,
+        lastDoc: lastDoc,
+      ),
+      failure: (msg, _) => state = state.copyWith(isLoading: false, error: msg),
+    );
+  }
+
+  Future<void> setStateFilter(String? selectedState) async {
+    state = HomeAdsState(isLoading: true, selectedState: selectedState);
+    final result = await _repository.getAds(limit: 20, stateFilter: selectedState);
+    result.when(
+      success: (ads) => state = state.copyWith(isLoading: false, ads: ads, hasMore: ads.length >= 20),
       failure: (msg, _) => state = state.copyWith(isLoading: false, error: msg),
     );
   }
@@ -230,7 +236,6 @@ class CreateAdNotifier extends StateNotifier<CreateAdState> {
   Future<String?> createAd(Ad ad, List<String> localImagePaths) async {
     state = const CreateAdState(isLoading: true, statusMessage: 'جاري رفع الصور...');
 
-    // Check rate limit
     final countResult = await _repository.getUserAdCountToday(ad.userId);
     final count = countResult.dataOrNull ?? 0;
     if (count >= 10) {
@@ -238,7 +243,6 @@ class CreateAdNotifier extends StateNotifier<CreateAdState> {
       return null;
     }
 
-    // Check 2-minute cooldown
     final prefs = await SharedPreferences.getInstance();
     final lastPost = prefs.getInt('last_ad_post_time');
     if (lastPost != null) {

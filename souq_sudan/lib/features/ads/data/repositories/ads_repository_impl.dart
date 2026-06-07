@@ -26,9 +26,13 @@ class AdsRepositoryImpl implements AdsRepository {
   }
 
   @override
-  Future<Result<List<Ad>>> getAds({Object? lastDoc, int limit = 20}) async {
+  Future<Result<List<Ad>>> getAds({Object? lastDoc, int limit = 20, String? stateFilter}) async {
     try {
-      final models = await _dataSource.getAds(lastDoc: lastDoc as DocumentSnapshot?, limit: limit);
+      final models = await _dataSource.getAds(
+        lastDoc: lastDoc as DocumentSnapshot?,
+        limit: limit,
+        stateFilter: stateFilter,
+      );
       return Result.success(models.map((m) => m.toEntity()).toList());
     } catch (e) { return Result.failure(_mapFirebaseError(e)); }
   }
@@ -143,6 +147,22 @@ class AdsRepositoryImpl implements AdsRepository {
   Future<Result<void>> toggleFeatured(String adId, bool isFeatured) async {
     try {
       await _dataSource.toggleFeatured(adId, isFeatured);
+      return const Result.success(null);
+    } catch (e) { return Result.failure(_mapFirebaseError(e)); }
+  }
+
+  @override
+  Future<Result<void>> bumpAd(String adId) async {
+    try {
+      await _dataSource.bumpAd(adId);
+      return const Result.success(null);
+    } catch (e) { return Result.failure(_mapFirebaseError(e)); }
+  }
+
+  @override
+  Future<Result<void>> requestFeatured(String adId) async {
+    try {
+      await _dataSource.requestFeatured(adId);
       return const Result.success(null);
     } catch (e) { return Result.failure(_mapFirebaseError(e)); }
   }

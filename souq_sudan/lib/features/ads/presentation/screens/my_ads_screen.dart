@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../core/enums/app_enums.dart';
 import '../../../../core/theme/app_theme.dart';
@@ -146,7 +147,32 @@ class _MyAdCard extends ConsumerWidget {
                 context.push('/edit-ad/${ad.id}');
               },
             ),
-            if (ad.status == AdStatus.active)
+            if (ad.status == AdStatus.active) ...[
+              ListTile(
+                leading: const Icon(Icons.rocket_launch_outlined, color: AppColors.primary),
+                title: const Text('تحديث الإعلان (رفع للأعلى)'),
+                subtitle: const Text('يظهر إعلانك في أعلى القائمة', style: TextStyle(fontSize: 12)),
+                onTap: () async {
+                  Navigator.pop(ctx);
+                  await _bumpAd(context, ref);
+                },
+              ),
+              if (!ad.isFeatured && !ad.featuredRequested)
+                ListTile(
+                  leading: const Icon(Icons.star_outline, color: AppColors.gold),
+                  title: const Text('طلب تمييز الإعلان'),
+                  subtitle: const Text('سيتم مراجعة طلبك من الإدارة', style: TextStyle(fontSize: 12)),
+                  onTap: () async {
+                    Navigator.pop(ctx);
+                    await _requestFeatured(context, ref);
+                  },
+                ),
+              if (ad.featuredRequested && !ad.isFeatured)
+                const ListTile(
+                  leading: Icon(Icons.pending_outlined, color: AppColors.gold),
+                  title: Text('طلب التمييز قيد المراجعة'),
+                  enabled: false,
+                ),
               ListTile(
                 leading: const Icon(Icons.check_circle_outline),
                 title: const Text('وضع علامة "تم البيع"'),
@@ -154,16 +180,14 @@ class _MyAdCard extends ConsumerWidget {
                   Navigator.pop(ctx);
                   final user = ref.read(currentUserProvider).value;
                   if (user == null) return;
-                  await ref
-                      .read(adsRepositoryProvider)
-                      .markAsSold(ad.id, user.id);
+                  await ref.read(adsRepositoryProvider).markAsSold(ad.id, user.id);
                   ref.invalidate(userAdsProvider(user.id));
                 },
               ),
+            ],
             ListTile(
               leading: const Icon(Icons.delete_outline, color: AppColors.error),
-              title: const Text('حذف',
-                  style: TextStyle(color: AppColors.error)),
+              title: const Text('حذف', style: TextStyle(color: AppColors.error)),
               onTap: () async {
                 Navigator.pop(ctx);
                 final confirmed = await ConfirmDialog.show(
@@ -176,9 +200,7 @@ class _MyAdCard extends ConsumerWidget {
                 if (!confirmed) return;
                 final user = ref.read(currentUserProvider).value;
                 if (user == null) return;
-                final res = await ref
-                    .read(adsRepositoryProvider)
-                    .deleteAd(ad.id, user.id);
+                final res = await ref.read(adsRepositoryProvider).deleteAd(ad.id, user.id);
                 if (!context.mounted) return;
                 res.when(
                   success: (_) {
@@ -188,8 +210,7 @@ class _MyAdCard extends ConsumerWidget {
                     ref.invalidate(userAdsProvider(user.id));
                   },
                   failure: (m, _) {
-                    ScaffoldMessenger.of(context)
-                        .showSnackBar(SnackBar(content: Text(m)));
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(m)));
                   },
                 );
               },
@@ -197,6 +218,56 @@ class _MyAdCard extends ConsumerWidget {
           ],
         ),
       ),
+    );
+  }
+
+  Future<void> _bumpAd(BuildContext context, WidgetRef ref) async {
+    final prefs = await SharedPreferences.getInstance();
+    final key = 'last_bump_time_${ad.id}';
+    final last = prefs.getInt(key);
+    if (last != null) {
+      final diff = DateTime.now().millisecondsSinceEpoch - last;
+      if (diff < 24 * 60 * 60 * 1000) {
+        final hoursLeft = ((24 * 60 * 60 * 1000 - diff) / 3600000).ceil();
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('يمكنك تحديث الإعلان بعد $hoursLeft ساعة')),
+        );
+        return;
+      }
+    }
+    final res = await ref.read(adsRepositoryProvider).bumpAd(ad.id);
+    if (!context.mounted) return;
+    res.when(
+      success: (_) async {
+        await prefs.setInt(key, DateTime.now().millisecondsSinceEpoch);
+        final user = ref.read(currentUserProvider).value;
+        if (user != null) ref.invalidate(userAdsProvider(user.id));
+        ref.read(homeAdsProvider.notifier).refresh();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('تم رفع الإعلان للأعلى'), backgroundColor: AppColors.success),
+        );
+      },
+      failure: (m, _) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(m)));
+      },
+    );
+  }
+
+  Future<void> _requestFeatured(BuildContext context, WidgetRef ref) async {
+    final res = await ref.read(adsRepositoryProvider).requestFeatured(ad.id);
+    if (!context.mounted) return;
+    res.when(
+      success: (_) {
+        final user = ref.read(currentUserProvider).value;
+        if (user != null) ref.invalidate(userAdsProvider(user.id));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('تم إرسال طلب التمييز للإدارة'), backgroundColor: AppColors.success),
+        );
+      },
+      failure: (m, _) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(m)));
+      },
     );
   }
 }

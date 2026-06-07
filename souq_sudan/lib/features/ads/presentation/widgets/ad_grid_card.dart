@@ -44,6 +44,30 @@ class AdGridCard extends StatelessWidget {
                       ),
                     ),
                   ),
+                // Seller rating badge (shown when >= 4.0)
+                if (ad.userRating >= 4.0)
+                  Positioned(
+                    bottom: 6,
+                    left: 6,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.65),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.star, size: 11, color: AppColors.gold),
+                          const SizedBox(width: 2),
+                          Text(
+                            ad.userRating.toStringAsFixed(1),
+                            style: const TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
               ],
             ),
             Padding(

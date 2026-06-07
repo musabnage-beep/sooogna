@@ -11,12 +11,16 @@ class Ad {
   final String? userName;
   final String? userPhone;
   final String location;
+  final String? adState;
   final bool isFeatured;
+  final bool featuredRequested;
   final AdStatus status;
   final String? rejectionReason;
   final int viewCount;
   final int favoriteCount;
+  final double userRating;
   final DateTime createdAt;
+  final DateTime? bumpedAt;
   final DateTime? updatedAt;
   final DateTime? expiresAt;
 
@@ -31,12 +35,16 @@ class Ad {
     this.userName,
     this.userPhone,
     required this.location,
+    this.adState,
     this.isFeatured = false,
+    this.featuredRequested = false,
     this.status = AdStatus.pending,
     this.rejectionReason,
     this.viewCount = 0,
     this.favoriteCount = 0,
+    this.userRating = 0.0,
     required this.createdAt,
+    this.bumpedAt,
     this.updatedAt,
     this.expiresAt,
   });
@@ -45,8 +53,10 @@ class Ad {
     String? id, String? title, String? description, double? price,
     String? category, List<String>? images, String? userId,
     String? userName, String? userPhone, String? location,
-    bool? isFeatured, AdStatus? status, String? rejectionReason,
-    int? viewCount, int? favoriteCount, DateTime? createdAt,
+    String? adState, bool? isFeatured, bool? featuredRequested,
+    AdStatus? status, String? rejectionReason,
+    int? viewCount, int? favoriteCount, double? userRating,
+    DateTime? createdAt, DateTime? bumpedAt,
     DateTime? updatedAt, DateTime? expiresAt,
   }) {
     return Ad(
@@ -55,10 +65,16 @@ class Ad {
       category: category ?? this.category, images: images ?? this.images,
       userId: userId ?? this.userId, userName: userName ?? this.userName,
       userPhone: userPhone ?? this.userPhone, location: location ?? this.location,
-      isFeatured: isFeatured ?? this.isFeatured, status: status ?? this.status,
+      adState: adState ?? this.adState,
+      isFeatured: isFeatured ?? this.isFeatured,
+      featuredRequested: featuredRequested ?? this.featuredRequested,
+      status: status ?? this.status,
       rejectionReason: rejectionReason ?? this.rejectionReason,
       viewCount: viewCount ?? this.viewCount, favoriteCount: favoriteCount ?? this.favoriteCount,
-      createdAt: createdAt ?? this.createdAt, updatedAt: updatedAt ?? this.updatedAt,
+      userRating: userRating ?? this.userRating,
+      createdAt: createdAt ?? this.createdAt,
+      bumpedAt: bumpedAt ?? this.bumpedAt,
+      updatedAt: updatedAt ?? this.updatedAt,
       expiresAt: expiresAt ?? this.expiresAt,
     );
   }

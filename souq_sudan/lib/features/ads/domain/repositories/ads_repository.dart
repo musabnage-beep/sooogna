@@ -3,7 +3,7 @@ import '../../../../core/enums/app_enums.dart';
 import '../../../../core/utils/result.dart';
 
 abstract class AdsRepository {
-  Future<Result<List<Ad>>> getAds({Object? lastDoc, int limit = 20});
+  Future<Result<List<Ad>>> getAds({Object? lastDoc, int limit = 20, String? stateFilter});
   Future<Result<List<Ad>>> getFeaturedAds();
   Future<Result<Ad?>> getAdById(String id);
   Future<Result<List<Ad>>> getAdsByUser(String userId);
@@ -18,4 +18,6 @@ abstract class AdsRepository {
   Future<Result<List<Ad>>> getAdsByStatus(AdStatus status, {Object? lastDoc, int limit = 20});
   Future<Result<void>> updateAdStatus(String adId, AdStatus status, {String? rejectionReason});
   Future<Result<void>> toggleFeatured(String adId, bool isFeatured);
+  Future<Result<void>> bumpAd(String adId);
+  Future<Result<void>> requestFeatured(String adId);
 }

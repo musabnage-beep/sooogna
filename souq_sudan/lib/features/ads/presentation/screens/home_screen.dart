@@ -23,7 +23,7 @@ class HomeScreen extends ConsumerStatefulWidget {
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   final _scrollController = ScrollController();
   String? _selectedCategory;
-  Object? _lastDoc; // For pagination cursor
+  Object? _lastDoc;
 
   @override
   void initState() {
@@ -51,6 +51,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final homeAdsState = ref.watch(homeAdsProvider);
     final featuredAsync = ref.watch(featuredAdsProvider);
     final unreadCount = ref.watch(totalUnreadCountProvider);
+    final selectedState = homeAdsState.selectedState;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -143,81 +144,152 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ),
               ),
             ),
-            const SliverToBoxAdapter(child: SizedBox(height: 8)),
-            // Featured ads banner
-            featuredAsync.when(
-              data: (featured) {
-                if (featured.isEmpty) return const SliverToBoxAdapter(child: SizedBox.shrink());
-                return SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                    child: CarouselSlider(
-                      options: CarouselOptions(
-                        height: 150,
-                        autoPlay: true,
-                        autoPlayInterval: const Duration(seconds: 4),
-                        viewportFraction: 0.85,
-                        enableInfiniteScroll: featured.length > 1,
-                      ),
-                      items: featured.map((ad) {
-                        return GestureDetector(
-                          onTap: () => context.push('/ads/${ad.id}'),
-                          child: Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 4),
-                            decoration: BoxDecoration(borderRadius: BorderRadius.circular(12)),
-                            child: Stack(
-                              fit: StackFit.expand,
-                              children: [
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(12),
-                                  child: CachedImageWidget(
-                                    imageUrl: ad.images.isNotEmpty ? ad.images[0] : null,
-                                    fit: BoxFit.cover,
-                                  ),
+            // ─── State filter bar ───────────────────────────────────────────
+            SliverToBoxAdapter(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(14, 10, 14, 4),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.location_on, size: 14, color: AppColors.primary),
+                        const SizedBox(width: 4),
+                        Text('فلتر الولاية',
+                            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                                color: AppColors.primary, fontWeight: FontWeight.w600)),
+                        if (selectedState != null) ...[
+                          const Spacer(),
+                          GestureDetector(
+                            onTap: () => ref.read(homeAdsProvider.notifier).setStateFilter(null),
+                            child: const Text('إلغاء',
+                                style: TextStyle(fontSize: 12, color: AppColors.error, fontWeight: FontWeight.w600)),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  SizedBox(
+                    height: 36,
+                    child: ListView(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      children: AppConstants.sudanStates.map((state) {
+                        final isSelected = selectedState == state;
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 3),
+                          child: GestureDetector(
+                            onTap: () {
+                              ref.read(homeAdsProvider.notifier).setStateFilter(
+                                    isSelected ? null : state,
+                                  );
+                            },
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 200),
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: isSelected ? AppColors.primary : Colors.white,
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                  color: isSelected ? AppColors.primary : AppColors.divider,
                                 ),
-                                Positioned(
-                                  bottom: 0, left: 0, right: 0,
-                                  child: Container(
-                                    padding: const EdgeInsets.all(10),
-                                    decoration: BoxDecoration(
-                                      gradient: LinearGradient(
-                                        begin: Alignment.bottomCenter,
-                                        end: Alignment.topCenter,
-                                        colors: [Colors.black.withValues(alpha: 0.7), Colors.transparent],
-                                      ),
-                                      borderRadius: const BorderRadius.vertical(bottom: Radius.circular(12)),
-                                    ),
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(ad.title, maxLines: 1, overflow: TextOverflow.ellipsis,
-                                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                                        Text(Helpers.formatPrice(ad.price),
-                                            style: const TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
-                                      ],
-                                    ),
-                                  ),
+                                boxShadow: isSelected
+                                    ? [BoxShadow(color: AppColors.primary.withValues(alpha: 0.3), blurRadius: 4)]
+                                    : [],
+                              ),
+                              child: Text(
+                                state,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                  color: isSelected ? Colors.white : AppColors.textSecondary,
                                 ),
-                                Positioned(
-                                  top: 8, right: 8,
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                    decoration: BoxDecoration(color: AppColors.gold, borderRadius: BorderRadius.circular(6)),
-                                    child: const Text('مميز', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
-                                  ),
-                                ),
-                              ],
+                              ),
                             ),
                           ),
                         );
                       }).toList(),
                     ),
                   ),
-                );
-              },
-              loading: () => const SliverToBoxAdapter(child: SizedBox.shrink()),
-              error: (_, __) => const SliverToBoxAdapter(child: SizedBox.shrink()),
+                  const SizedBox(height: 4),
+                ],
+              ),
             ),
+            // Featured ads banner (only show when no state filter active)
+            if (selectedState == null)
+              featuredAsync.when(
+                data: (featured) {
+                  if (featured.isEmpty) return const SliverToBoxAdapter(child: SizedBox.shrink());
+                  return SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                      child: CarouselSlider(
+                        options: CarouselOptions(
+                          height: 150,
+                          autoPlay: true,
+                          autoPlayInterval: const Duration(seconds: 4),
+                          viewportFraction: 0.85,
+                          enableInfiniteScroll: featured.length > 1,
+                        ),
+                        items: featured.map((ad) {
+                          return GestureDetector(
+                            onTap: () => context.push('/ads/${ad.id}'),
+                            child: Container(
+                              margin: const EdgeInsets.symmetric(horizontal: 4),
+                              decoration: BoxDecoration(borderRadius: BorderRadius.circular(12)),
+                              child: Stack(
+                                fit: StackFit.expand,
+                                children: [
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: CachedImageWidget(
+                                      imageUrl: ad.images.isNotEmpty ? ad.images[0] : null,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                  Positioned(
+                                    bottom: 0, left: 0, right: 0,
+                                    child: Container(
+                                      padding: const EdgeInsets.all(10),
+                                      decoration: BoxDecoration(
+                                        gradient: LinearGradient(
+                                          begin: Alignment.bottomCenter,
+                                          end: Alignment.topCenter,
+                                          colors: [Colors.black.withValues(alpha: 0.7), Colors.transparent],
+                                        ),
+                                        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(12)),
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(ad.title, maxLines: 1, overflow: TextOverflow.ellipsis,
+                                              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                                          Text(Helpers.formatPrice(ad.price),
+                                              style: const TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold)),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  Positioned(
+                                    top: 8, right: 8,
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                      decoration: BoxDecoration(color: AppColors.gold, borderRadius: BorderRadius.circular(6)),
+                                      child: const Text('مميز', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                  );
+                },
+                loading: () => const SliverToBoxAdapter(child: SizedBox.shrink()),
+                error: (_, __) => const SliverToBoxAdapter(child: SizedBox.shrink()),
+              ),
             // Ads header
             SliverToBoxAdapter(
               child: Padding(
@@ -226,7 +298,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   children: [
                     Container(width: 4, height: 20, decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(2))),
                     const SizedBox(width: 8),
-                    Text('أحدث الإعلانات', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                    Text(
+                      selectedState != null ? 'إعلانات $selectedState' : 'أحدث الإعلانات',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                    ),
                   ],
                 ),
               ),
@@ -240,8 +315,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ),
               )
             else if (!homeAdsState.isLoading && homeAdsState.ads.isEmpty)
-              const SliverFillRemaining(
-                child: EmptyStateWidget(icon: Icons.inbox, message: 'لا توجد إعلانات حالياً'),
+              SliverFillRemaining(
+                child: EmptyStateWidget(
+                  icon: Icons.inbox,
+                  message: selectedState != null
+                      ? 'لا توجد إعلانات في $selectedState'
+                      : 'لا توجد إعلانات حالياً',
+                ),
               )
             else
               SliverPadding(
