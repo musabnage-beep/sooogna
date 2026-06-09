@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/l10n/app_locale.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/confirm_dialog.dart';
 import '../../../../core/widgets/custom_app_bar.dart';
@@ -112,6 +113,28 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
   }
 
+  Widget _buildLanguageTile() {
+    final locale = ref.watch(localeProvider);
+    final isAr = locale.languageCode == 'ar';
+    return ListTile(
+      leading: const Icon(Icons.language, color: AppColors.primary),
+      title: const Text('اللغة / Language'),
+      trailing: SegmentedButton<String>(
+        segments: const [
+          ButtonSegment(value: 'ar', label: Text('العربية')),
+          ButtonSegment(value: 'en', label: Text('English')),
+        ],
+        selected: {locale.languageCode},
+        onSelectionChanged: (v) {
+          ref.read(localeProvider.notifier).setLocale(v.first);
+        },
+        style: ButtonStyle(
+          visualDensity: VisualDensity.compact,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_loading) {
@@ -125,6 +148,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       body: ListView(
         children: [
           const _SectionHeader(title: 'التفضيلات'),
+          _buildLanguageTile(),
           SwitchListTile(
             secondary: const Icon(Icons.notifications_outlined,
                 color: AppColors.primary),

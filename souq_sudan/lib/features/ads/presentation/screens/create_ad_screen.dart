@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/l10n/app_locale.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/validators.dart';
 import '../../../../core/widgets/custom_app_bar.dart';
@@ -13,6 +14,7 @@ import '../../../auth/domain/entities/user_entity.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../domain/entities/ad_entity.dart';
 import '../providers/ads_provider.dart';
+import '../widgets/category_fields_widget.dart';
 import '../widgets/image_picker_widget.dart';
 
 class CreateAdScreen extends ConsumerStatefulWidget {
@@ -33,6 +35,7 @@ class _CreateAdScreenState extends ConsumerState<CreateAdScreen> {
   String? _state;
   List<File> _images = [];
   bool _phonePrefilled = false;
+  Map<String, String> _attributes = {};
 
   @override
   void dispose() {
@@ -147,7 +150,16 @@ class _CreateAdScreenState extends ConsumerState<CreateAdScreen> {
                     .map((c) => DropdownMenuItem(
                         value: c['id'], child: Text(c['name'] ?? '')))
                     .toList(),
-                onChanged: (v) => setState(() => _category = v),
+                onChanged: (v) => setState(() {
+                  _category = v;
+                  _attributes = {};
+                }),
+              ),
+              CategoryFieldsWidget(
+                categoryId: _category,
+                values: _attributes,
+                onChanged: (v) => setState(() => _attributes = v),
+                langCode: ref.watch(localeProvider).languageCode,
               ),
               const SizedBox(height: 8),
               DropdownButtonFormField<String>(
@@ -263,6 +275,7 @@ class _CreateAdScreenState extends ConsumerState<CreateAdScreen> {
       createdAt: DateTime.now(),
       adState: _state,
       userRating: user.rating,
+      attributes: Map<String, dynamic>.from(_attributes),
     );
     final id =
         await ref.read(createAdProvider.notifier).createAd(ad, _images.map((f) => f.path).toList());

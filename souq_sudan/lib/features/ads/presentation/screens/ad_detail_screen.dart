@@ -3,6 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../../core/constants/category_filters.dart';
+import '../../../../core/l10n/app_locale.dart';
+
 import '../../../../core/enums/app_enums.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/helpers.dart';
@@ -275,6 +278,41 @@ class _AdDetailScreenState extends ConsumerState<AdDetailScreen> {
                           height: 1.55,
                         ),
                       ),
+                      if (ad.attributes.isNotEmpty) ...[
+                        const SizedBox(height: 16),
+                        const Divider(),
+                        const SizedBox(height: 8),
+                        Text(
+                          S.tr('details', ref.watch(localeProvider).languageCode),
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: ad.attributes.entries.map((e) {
+                            final lang = ref.watch(localeProvider).languageCode;
+                            final fields = CategoryFilters.forCategory(ad.category);
+                            final field = fields.where((f) => f['key'] == e.key).firstOrNull;
+                            final label = field != null ? CategoryFilters.labelFor(field, lang) : e.key;
+                            return Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: AppColors.primary.withValues(alpha: 0.08),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                '$label: ${e.value}',
+                                style: const TextStyle(fontSize: 12.5, color: AppColors.primary),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ],
                     ],
                   ),
                 ),

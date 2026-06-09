@@ -32,6 +32,7 @@ class Ad {
   final DateTime? bumpedAt;
   final DateTime? updatedAt;
   final DateTime? expiresAt;
+  final Map<String, dynamic> attributes;
 
   const Ad({
     required this.id,
@@ -58,6 +59,7 @@ class Ad {
     this.bumpedAt,
     this.updatedAt,
     this.expiresAt,
+    this.attributes = const {},
   });
 
   Ad copyWith({
@@ -70,6 +72,7 @@ class Ad {
     int? viewCount, int? favoriteCount, double? userRating,
     DateTime? createdAt, DateTime? bumpedAt,
     DateTime? updatedAt, DateTime? expiresAt,
+    Map<String, dynamic>? attributes,
   }) {
     return Ad(
       id: id ?? this.id, title: title ?? this.title,
@@ -89,6 +92,7 @@ class Ad {
       bumpedAt: bumpedAt ?? this.bumpedAt,
       updatedAt: updatedAt ?? this.updatedAt,
       expiresAt: expiresAt ?? this.expiresAt,
+      attributes: attributes ?? this.attributes,
     );
   }
 }

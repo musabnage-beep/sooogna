@@ -29,6 +29,7 @@ class AdModel {
   final Timestamp? bumpedAt;
   final Timestamp? updatedAt;
   final Timestamp? expiresAt;
+  final Map<String, dynamic> attributes;
 
   const AdModel({
     required this.id,
@@ -56,6 +57,7 @@ class AdModel {
     this.bumpedAt,
     this.updatedAt,
     this.expiresAt,
+    this.attributes = const {},
   });
 
   factory AdModel.fromMap(Map<String, dynamic> map, String id) {
@@ -85,6 +87,7 @@ class AdModel {
       bumpedAt: map['bumpedAt'] as Timestamp?,
       updatedAt: map['updatedAt'] as Timestamp?,
       expiresAt: map['expiresAt'] as Timestamp?,
+      attributes: Map<String, dynamic>.from(map['attributes'] as Map? ?? {}),
     );
   }
 
@@ -119,6 +122,7 @@ class AdModel {
       'bumpedAt': bumpedAt,
       'updatedAt': updatedAt,
       'expiresAt': expiresAt,
+      'attributes': attributes,
     };
   }
 
@@ -148,6 +152,7 @@ class AdModel {
       bumpedAt: bumpedAt?.toDate(),
       updatedAt: updatedAt?.toDate(),
       expiresAt: expiresAt?.toDate(),
+      attributes: attributes,
     );
   }
 
@@ -181,6 +186,7 @@ class AdModel {
       bumpedAt: ad.bumpedAt != null ? Timestamp.fromDate(ad.bumpedAt!) : null,
       updatedAt: ad.updatedAt != null ? Timestamp.fromDate(ad.updatedAt!) : null,
       expiresAt: ad.expiresAt != null ? Timestamp.fromDate(ad.expiresAt!) : null,
+      attributes: ad.attributes,
     );
   }
 }

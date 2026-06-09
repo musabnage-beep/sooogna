@@ -10,6 +10,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 import 'config/router.dart';
+import 'core/l10n/app_locale.dart';
 import 'core/theme/app_theme.dart';
 import 'core/utils/helpers.dart';
 import 'features/notifications/data/notification_service.dart';
@@ -96,12 +97,13 @@ class _SouqSudanAppState extends ConsumerState<SouqSudanApp> {
   Widget build(BuildContext context) {
     final router = ref.watch(routerProvider);
 
+    final locale = ref.watch(localeProvider);
     return MaterialApp.router(
-      title: 'سوق السودان',
+      title: S.tr('app_name', locale.languageCode),
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       routerConfig: router,
-      locale: const Locale('ar'),
+      locale: locale,
       supportedLocales: const [Locale('ar'), Locale('en')],
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,
@@ -111,7 +113,7 @@ class _SouqSudanAppState extends ConsumerState<SouqSudanApp> {
       builder: (context, child) {
         NotificationService.instance.setNavigatorContext(context);
         return Directionality(
-          textDirection: TextDirection.rtl,
+          textDirection: locale.languageCode == 'ar' ? TextDirection.rtl : TextDirection.ltr,
           child: child ?? const SizedBox.shrink(),
         );
       },
