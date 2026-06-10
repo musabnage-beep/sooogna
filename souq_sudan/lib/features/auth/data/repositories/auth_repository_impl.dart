@@ -52,9 +52,9 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<Result<AppUser>> createUser(String uid, String name, String phone) async {
+  Future<Result<AppUser>> createUser(String uid, String name, String phone, {String? city, String? gender}) async {
     try {
-      final model = await _dataSource.createUser(uid, name, phone);
+      final model = await _dataSource.createUser(uid, name, phone, city: city, gender: gender);
       return Result.success(model.toEntity());
     } catch (e) {
       return Result.failure('خطأ في إنشاء الحساب: ${e.toString()}');

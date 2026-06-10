@@ -160,7 +160,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       side: const BorderSide(color: AppColors.primary, width: 1.5),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
-                    onPressed: () => context.push('/register'),
+                    onPressed: () => _showLoginSheet(context, isLoading, isRegister: true),
                     child: const Text(
                       'إنشاء حساب جديد',
                       style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -235,7 +235,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     );
   }
 
-  void _showLoginSheet(BuildContext context, bool isLoading) {
+  void _showLoginSheet(BuildContext context, bool isLoading, {bool isRegister = false}) {
+    _phoneController.clear();
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -258,25 +259,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 Center(
                   child: Container(
                     width: 40, height: 4,
-                    decoration: BoxDecoration(
-                      color: AppColors.divider,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
+                    decoration: BoxDecoration(color: AppColors.divider, borderRadius: BorderRadius.circular(2)),
                   ),
                 ),
                 const SizedBox(height: 20),
-                const Text(
-                  'تسجيل الدخول',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
-                  ),
+                Text(
+                  isRegister ? 'إنشاء حساب جديد' : 'تسجيل الدخول',
+                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
                 ),
                 const SizedBox(height: 6),
-                const Text(
-                  'أدخل رقم هاتفك للمتابعة',
-                  style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
+                Text(
+                  isRegister
+                      ? 'أدخل رقم هاتفك لإنشاء حسابك'
+                      : 'أدخل رقم هاتفك للمتابعة',
+                  style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
                 ),
                 const SizedBox(height: 20),
                 PhoneInputField(controller: _phoneController),
@@ -296,14 +292,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             _sendOtp();
                           },
                     child: isLoading
-                        ? const SizedBox(
-                            height: 20, width: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                          )
-                        : const Text(
-                            'إرسال رمز التحقق',
-                            style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-                          ),
+                        ? const SizedBox(height: 20, width: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                        : const Text('إرسال رمز التحقق',
+                            style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
                   ),
                 ),
                 const SizedBox(height: 24),

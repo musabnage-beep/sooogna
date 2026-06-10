@@ -78,9 +78,9 @@ class AuthNotifier extends StateNotifier<AsyncValue<void>> {
     return result.dataOrNull ?? false;
   }
 
-  Future<AppUser?> createUser(String uid, String name, String phone) async {
+  Future<AppUser?> createUser(String uid, String name, String phone, {String? city, String? gender}) async {
     state = const AsyncValue.loading();
-    final result = await _repository.createUser(uid, name, phone);
+    final result = await _repository.createUser(uid, name, phone, city: city, gender: gender);
     return result.when(
       success: (user) {
         state = const AsyncValue.data(null);

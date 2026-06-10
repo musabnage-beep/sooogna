@@ -7,6 +7,8 @@ class UserModel {
   final String name;
   final String phone;
   final String? profileImage;
+  final String? city;
+  final String? gender;
   final bool isVerified;
   final String verifiedStatus;
   final double rating;
@@ -24,6 +26,8 @@ class UserModel {
     required this.name,
     required this.phone,
     this.profileImage,
+    this.city,
+    this.gender,
     this.isVerified = false,
     this.verifiedStatus = 'unverified',
     this.rating = 0.0,
@@ -47,6 +51,8 @@ class UserModel {
       name: (map['name'] as String?) ?? '',
       phone: (map['phone'] as String?) ?? '',
       profileImage: map['profileImage'] as String?,
+      city: map['city'] as String?,
+      gender: map['gender'] as String?,
       isVerified: isVerified || verifiedStatus != 'unverified',
       verifiedStatus: verifiedStatus,
       rating: ((map['rating'] as num?) ?? 0).toDouble(),
@@ -71,6 +77,8 @@ class UserModel {
       'name': name,
       'phone': phone,
       'profileImage': profileImage,
+      'city': city,
+      'gender': gender,
       'isVerified': isVerified,
       'verifiedStatus': verifiedStatus,
       'rating': rating,
@@ -91,6 +99,8 @@ class UserModel {
       name: name,
       phone: phone,
       profileImage: profileImage,
+      city: city,
+      gender: gender,
       isVerified: isVerified,
       verifiedStatus: VerifiedStatusExtension.fromString(verifiedStatus),
       rating: rating,
@@ -111,6 +121,8 @@ class UserModel {
       name: user.name,
       phone: user.phone,
       profileImage: user.profileImage,
+      city: user.city,
+      gender: user.gender,
       isVerified: user.isVerified || user.verifiedStatus.isVerified,
       verifiedStatus: user.verifiedStatus.value,
       rating: user.rating,

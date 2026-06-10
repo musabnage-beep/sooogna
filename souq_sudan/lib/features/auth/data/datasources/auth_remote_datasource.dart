@@ -60,12 +60,20 @@ class AuthRemoteDataSource {
     return doc.exists;
   }
 
-  Future<UserModel> createUser(String uid, String name, String phone) async {
+  Future<UserModel> createUser(
+    String uid,
+    String name,
+    String phone, {
+    String? city,
+    String? gender,
+  }) async {
     final now = Timestamp.now();
     final model = UserModel(
       id: uid,
       name: name,
       phone: phone,
+      city: city,
+      gender: gender,
       createdAt: now,
       lastActiveAt: now,
     );
