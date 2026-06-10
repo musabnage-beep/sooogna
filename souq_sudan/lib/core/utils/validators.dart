@@ -6,17 +6,12 @@ class Validators {
       return 'يرجى إدخال رقم الهاتف';
     }
     final cleaned = value.replaceAll(' ', '').replaceAll('-', '');
-    // Accept any international E.164 number (+country_code + digits)
-    // OR Sudan local format (0XXXXXXXXX or 249XXXXXXXXX)
-    final e164Regex = RegExp(r'^\+[1-9][0-9]{6,14}$');
-    final sudanLocalRegex = RegExp(r'^0?9[0-9]{8}$'); // Sudan 09XXXXXXXX or 9XXXXXXXX
-    final sudanLongRegex = RegExp(r'^249[0-9]{9}$');   // Without +
-    if (!e164Regex.hasMatch(cleaned) &&
-        !sudanLocalRegex.hasMatch(cleaned) &&
-        !sudanLongRegex.hasMatch(cleaned)) {
-      return 'يرجى إدخال رقم هاتف صحيح مع رمز الدولة (مثال: +249XXXXXXXXX)';
-    }
-    return null;
+    // E.164: +[1-9][digits] — any country code
+    if (RegExp(r'^\+[1-9][0-9]{6,14}$').hasMatch(cleaned)) return null;
+    // Sudan local shorthand
+    if (RegExp(r'^0?9[0-9]{8}$').hasMatch(cleaned)) return null;
+    if (RegExp(r'^249[0-9]{9}$').hasMatch(cleaned)) return null;
+    return 'رقم الهاتف غير صحيح';
   }
 
   static String? validateName(String? value) {
