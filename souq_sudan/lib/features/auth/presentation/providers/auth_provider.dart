@@ -11,6 +11,23 @@ import '../../domain/repositories/auth_repository.dart';
 final firebaseAuthProvider = Provider<FirebaseAuth>((ref) => FirebaseAuth.instance);
 final firestoreProvider = Provider<FirebaseFirestore>((ref) => FirebaseFirestore.instance);
 
+/// Registration details collected before OTP verification, consumed by the OTP
+/// screen once the phone is confirmed (Haraj-style sign-up flow).
+class PendingRegistration {
+  final String name;
+  final String phone;
+  final String? city;
+  final String? gender;
+  const PendingRegistration({
+    required this.name,
+    required this.phone,
+    this.city,
+    this.gender,
+  });
+}
+
+final pendingRegistrationProvider = StateProvider<PendingRegistration?>((ref) => null);
+
 // Auth state changes stream
 final authStateChangesProvider = StreamProvider<User?>((ref) {
   return ref.watch(firebaseAuthProvider).authStateChanges();

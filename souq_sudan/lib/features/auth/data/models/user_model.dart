@@ -6,9 +6,9 @@ class UserModel {
   final String id;
   final String name;
   final String phone;
-  final String? profileImage;
   final String? city;
   final String? gender;
+  final String? profileImage;
   final bool isVerified;
   final String verifiedStatus;
   final double rating;
@@ -25,9 +25,9 @@ class UserModel {
     required this.id,
     required this.name,
     required this.phone,
-    this.profileImage,
     this.city,
     this.gender,
+    this.profileImage,
     this.isVerified = false,
     this.verifiedStatus = 'unverified',
     this.rating = 0.0,
@@ -50,9 +50,9 @@ class UserModel {
       id: id,
       name: (map['name'] as String?) ?? '',
       phone: (map['phone'] as String?) ?? '',
-      profileImage: map['profileImage'] as String?,
       city: map['city'] as String?,
       gender: map['gender'] as String?,
+      profileImage: map['profileImage'] as String?,
       isVerified: isVerified || verifiedStatus != 'unverified',
       verifiedStatus: verifiedStatus,
       rating: ((map['rating'] as num?) ?? 0).toDouble(),
@@ -76,9 +76,9 @@ class UserModel {
       'id': id,
       'name': name,
       'phone': phone,
-      'profileImage': profileImage,
       'city': city,
       'gender': gender,
+      'profileImage': profileImage,
       'isVerified': isVerified,
       'verifiedStatus': verifiedStatus,
       'rating': rating,
@@ -98,9 +98,9 @@ class UserModel {
       id: id,
       name: name,
       phone: phone,
-      profileImage: profileImage,
       city: city,
       gender: gender,
+      profileImage: profileImage,
       isVerified: isVerified,
       verifiedStatus: VerifiedStatusExtension.fromString(verifiedStatus),
       rating: rating,
@@ -120,9 +120,9 @@ class UserModel {
       id: user.id,
       name: user.name,
       phone: user.phone,
-      profileImage: user.profileImage,
       city: user.city,
       gender: user.gender,
+      profileImage: user.profileImage,
       isVerified: user.isVerified || user.verifiedStatus.isVerified,
       verifiedStatus: user.verifiedStatus.value,
       rating: user.rating,

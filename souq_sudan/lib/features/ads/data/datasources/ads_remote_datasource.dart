@@ -88,23 +88,22 @@ class AdsRemoteDataSource {
   }
 
   Future<List<AdModel>> searchAds(String query, {String? category, String? location, String? city, bool directOwnersOnly = false, double? minPrice, double? maxPrice, String? sortBy}) async {
-    // Expand query with synonyms then use arrayContainsAny
     final keywords = Helpers.expandSearchQuery(query).take(10).toList();
 
-    Query q = _adsRef.where('status', isEqualTo: 'active');
-
+    // When keywords present, use ONLY arrayContainsAny server-side.
+    // Combining arrayContainsAny with ANY other filter (even status==active)
+    // requires a composite index — avoid it by filtering everything else client-side.
+    Query q;
     if (keywords.isNotEmpty) {
-      q = q.where('searchKeywords', arrayContainsAny: keywords);
-    }
-    if (category != null && category.isNotEmpty) {
-      q = q.where('category', isEqualTo: category);
-    }
-    if (location != null && location.isNotEmpty) {
-      q = q.where('location', isEqualTo: location);
-    }
-
-    // Apply sort - only when not using arrayContainsAny with price (Firestore limitation)
-    if (keywords.isEmpty) {
+      q = _adsRef.where('searchKeywords', arrayContainsAny: keywords);
+    } else {
+      q = _adsRef.where('status', isEqualTo: 'active');
+      if (category != null && category.isNotEmpty) {
+        q = q.where('category', isEqualTo: category);
+      }
+      if (location != null && location.isNotEmpty) {
+        q = q.where('location', isEqualTo: location);
+      }
       if (sortBy == 'price_asc') {
         q = q.orderBy('price').orderBy('createdAt', descending: true);
       } else if (sortBy == 'price_desc') {
@@ -119,8 +118,11 @@ class AdsRemoteDataSource {
     final snap = await q.limit(50).get();
     var results = snap.docs.map((d) => AdModel.fromDocument(d)).toList();
 
-    // Client-side filter for price when using text search
     if (keywords.isNotEmpty) {
+      results = results.where((a) => a.status == 'active').toList();
+      if (category != null && category.isNotEmpty) {
+        results = results.where((a) => a.category == category).toList();
+      }
       if (minPrice != null) results = results.where((a) => a.price >= minPrice).toList();
       if (maxPrice != null) results = results.where((a) => a.price <= maxPrice).toList();
       if (sortBy == 'price_asc') {
@@ -167,6 +169,10 @@ class AdsRemoteDataSource {
       userName: model.userName,
       userPhone: model.userPhone,
       location: model.location,
+      city: model.city,
+      ownerType: model.ownerType,
+      attributes: model.attributes,
+      adState: model.adState,
       isFeatured: false,
       status: 'pending',
       searchKeywords: model.searchKeywords,

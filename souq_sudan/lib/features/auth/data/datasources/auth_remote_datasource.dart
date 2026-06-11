@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import '../models/user_model.dart';
 
 class AuthRemoteDataSource {
@@ -17,9 +18,19 @@ class AuthRemoteDataSource {
 
   Stream<User?> get authStateChanges => _auth.authStateChanges();
 
-  Future<String> sendOtp(String phoneNumber) async {
-    final completer = Completer<String>();
+  // Web: stores the ConfirmationResult so verifyOtp can confirm it.
+  ConfirmationResult? _webConfirmation;
 
+  Future<String> sendOtp(String phoneNumber) async {
+    if (kIsWeb) {
+      // verifyPhoneNumber is not supported on web.
+      // signInWithPhoneNumber auto-creates an invisible reCAPTCHA when no verifier is passed.
+      _webConfirmation = await _auth.signInWithPhoneNumber(phoneNumber);
+      return 'web_confirmation';
+    }
+
+    // Mobile flow (Android / iOS)
+    final completer = Completer<String>();
     await _auth.verifyPhoneNumber(
       phoneNumber: phoneNumber,
       verificationCompleted: (PhoneAuthCredential credential) async {
@@ -41,11 +52,14 @@ class AuthRemoteDataSource {
       },
       timeout: const Duration(seconds: 60),
     );
-
     return completer.future;
   }
 
   Future<bool> verifyOtp(String verificationId, String otp) async {
+    if (verificationId == 'web_confirmation') {
+      final result = await _webConfirmation!.confirm(otp);
+      return result.user != null;
+    }
     if (verificationId == 'auto') return true;
     final credential = PhoneAuthProvider.credential(
       verificationId: verificationId,

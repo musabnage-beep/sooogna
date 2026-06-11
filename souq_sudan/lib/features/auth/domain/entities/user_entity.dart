@@ -4,9 +4,9 @@ class AppUser {
   final String id;
   final String name;
   final String phone;
-  final String? profileImage;
   final String? city;
   final String? gender;
+  final String? profileImage;
   final bool isVerified;
   final VerifiedStatus verifiedStatus;
   final double rating;
@@ -23,9 +23,9 @@ class AppUser {
     required this.id,
     required this.name,
     required this.phone,
-    this.profileImage,
     this.city,
     this.gender,
+    this.profileImage,
     this.isVerified = false,
     this.verifiedStatus = VerifiedStatus.unverified,
     this.rating = 0.0,

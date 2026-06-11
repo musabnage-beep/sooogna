@@ -20,6 +20,7 @@ class Ad {
   final String location;
   final String? city;
   final OwnerType ownerType;
+  final Map<String, String> attributes;
   final String? adState;
   final bool isFeatured;
   final bool featuredRequested;
@@ -32,7 +33,6 @@ class Ad {
   final DateTime? bumpedAt;
   final DateTime? updatedAt;
   final DateTime? expiresAt;
-  final Map<String, dynamic> attributes;
 
   const Ad({
     required this.id,
@@ -47,6 +47,7 @@ class Ad {
     required this.location,
     this.city,
     this.ownerType = OwnerType.owner,
+    this.attributes = const {},
     this.adState,
     this.isFeatured = false,
     this.featuredRequested = false,
@@ -59,20 +60,18 @@ class Ad {
     this.bumpedAt,
     this.updatedAt,
     this.expiresAt,
-    this.attributes = const {},
   });
 
   Ad copyWith({
     String? id, String? title, String? description, double? price,
     String? category, List<String>? images, String? userId,
     String? userName, String? userPhone, String? location,
-    String? city, OwnerType? ownerType,
+    String? city, OwnerType? ownerType, Map<String, String>? attributes,
     String? adState, bool? isFeatured, bool? featuredRequested,
     AdStatus? status, String? rejectionReason,
     int? viewCount, int? favoriteCount, double? userRating,
     DateTime? createdAt, DateTime? bumpedAt,
     DateTime? updatedAt, DateTime? expiresAt,
-    Map<String, dynamic>? attributes,
   }) {
     return Ad(
       id: id ?? this.id, title: title ?? this.title,
@@ -81,6 +80,7 @@ class Ad {
       userId: userId ?? this.userId, userName: userName ?? this.userName,
       userPhone: userPhone ?? this.userPhone, location: location ?? this.location,
       city: city ?? this.city, ownerType: ownerType ?? this.ownerType,
+      attributes: attributes ?? this.attributes,
       adState: adState ?? this.adState,
       isFeatured: isFeatured ?? this.isFeatured,
       featuredRequested: featuredRequested ?? this.featuredRequested,
@@ -92,7 +92,6 @@ class Ad {
       bumpedAt: bumpedAt ?? this.bumpedAt,
       updatedAt: updatedAt ?? this.updatedAt,
       expiresAt: expiresAt ?? this.expiresAt,
-      attributes: attributes ?? this.attributes,
     );
   }
 }

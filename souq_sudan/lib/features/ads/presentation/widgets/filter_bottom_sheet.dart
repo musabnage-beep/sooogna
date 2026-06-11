@@ -153,9 +153,9 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
       minChildSize: 0.5,
       expand: false,
       builder: (ctx, scrollCtrl) => Container(
-        decoration: BoxDecoration(
-          color: Theme.of(context).scaffoldBackgroundColor,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        decoration: const BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
         padding: const EdgeInsets.all(16),
         child: Column(

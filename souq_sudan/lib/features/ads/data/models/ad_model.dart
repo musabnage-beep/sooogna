@@ -16,6 +16,7 @@ class AdModel {
   final String location;
   final String? city;
   final String ownerType;
+  final Map<String, String> attributes;
   final String? adState;
   final bool isFeatured;
   final bool featuredRequested;
@@ -29,7 +30,6 @@ class AdModel {
   final Timestamp? bumpedAt;
   final Timestamp? updatedAt;
   final Timestamp? expiresAt;
-  final Map<String, dynamic> attributes;
 
   const AdModel({
     required this.id,
@@ -44,6 +44,7 @@ class AdModel {
     required this.location,
     this.city,
     this.ownerType = 'owner',
+    this.attributes = const {},
     this.adState,
     this.isFeatured = false,
     this.featuredRequested = false,
@@ -57,7 +58,6 @@ class AdModel {
     this.bumpedAt,
     this.updatedAt,
     this.expiresAt,
-    this.attributes = const {},
   });
 
   factory AdModel.fromMap(Map<String, dynamic> map, String id) {
@@ -74,6 +74,10 @@ class AdModel {
       location: (map['location'] as String?) ?? '',
       city: map['city'] as String?,
       ownerType: (map['ownerType'] as String?) ?? 'owner',
+      attributes: (map['attributes'] as Map?)?.map(
+            (k, v) => MapEntry(k.toString(), v.toString()),
+          ) ??
+          const {},
       adState: map['adState'] as String?,
       isFeatured: (map['isFeatured'] as bool?) ?? false,
       featuredRequested: (map['featuredRequested'] as bool?) ?? false,
@@ -87,7 +91,6 @@ class AdModel {
       bumpedAt: map['bumpedAt'] as Timestamp?,
       updatedAt: map['updatedAt'] as Timestamp?,
       expiresAt: map['expiresAt'] as Timestamp?,
-      attributes: Map<String, dynamic>.from(map['attributes'] as Map? ?? {}),
     );
   }
 
@@ -109,6 +112,7 @@ class AdModel {
       'location': location,
       'city': city,
       'ownerType': ownerType,
+      'attributes': attributes,
       'adState': adState,
       'isFeatured': isFeatured,
       'featuredRequested': featuredRequested,
@@ -122,7 +126,6 @@ class AdModel {
       'bumpedAt': bumpedAt,
       'updatedAt': updatedAt,
       'expiresAt': expiresAt,
-      'attributes': attributes,
     };
   }
 
@@ -140,6 +143,7 @@ class AdModel {
       location: location,
       city: city,
       ownerType: OwnerTypeExtension.fromString(ownerType),
+      attributes: attributes,
       adState: adState,
       isFeatured: isFeatured,
       featuredRequested: featuredRequested,
@@ -152,12 +156,13 @@ class AdModel {
       bumpedAt: bumpedAt?.toDate(),
       updatedAt: updatedAt?.toDate(),
       expiresAt: expiresAt?.toDate(),
-      attributes: attributes,
     );
   }
 
   static AdModel fromEntity(Ad ad) {
-    final keywords = Helpers.extractSearchKeywords(ad.title);
+    final keywords = Helpers.extractSearchKeywords(
+      '${ad.title} ${ad.attributes.values.join(' ')}',
+    );
     final extractedState = ad.adState ??
         (ad.location.contains(' - ') ? ad.location.split(' - ').first : null);
     return AdModel(
@@ -173,6 +178,7 @@ class AdModel {
       location: ad.location,
       city: ad.city,
       ownerType: ad.ownerType.value,
+      attributes: ad.attributes,
       adState: extractedState,
       isFeatured: ad.isFeatured,
       featuredRequested: ad.featuredRequested,
@@ -186,7 +192,6 @@ class AdModel {
       bumpedAt: ad.bumpedAt != null ? Timestamp.fromDate(ad.bumpedAt!) : null,
       updatedAt: ad.updatedAt != null ? Timestamp.fromDate(ad.updatedAt!) : null,
       expiresAt: ad.expiresAt != null ? Timestamp.fromDate(ad.expiresAt!) : null,
-      attributes: ad.attributes,
     );
   }
 }

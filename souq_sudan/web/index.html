@@ -122,8 +122,8 @@
         hide();
       });
 
-      // Safety net: never keep the overlay longer than 12s.
-      setTimeout(function () { videoEnded = true; firstFrame = true; hide(); }, 12000);
+      // Safety net: never keep the overlay longer than 5s.
+      setTimeout(function () { videoEnded = true; firstFrame = true; hide(); }, 5000);
     })();
   </script>
   <script src="flutter_bootstrap.js" async></script>

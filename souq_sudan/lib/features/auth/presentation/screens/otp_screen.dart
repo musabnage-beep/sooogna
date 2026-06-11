@@ -73,6 +73,29 @@ class _OTPScreenState extends ConsumerState<OTPScreen> {
         if (!mounted) return;
         if (exists) {
           context.go('/home');
+          return;
+        }
+        // New number. If the user came from the registration form their details
+        // are waiting — create the account now. Otherwise (came straight from
+        // login) send them to the registration form.
+        final pending = ref.read(pendingRegistrationProvider);
+        if (pending != null) {
+          final phone =
+              ref.read(firebaseAuthProvider).currentUser?.phoneNumber ??
+                  pending.phone;
+          final user = await notifier.createUser(
+            uid,
+            pending.name,
+            phone,
+            city: pending.city,
+            gender: pending.gender,
+          );
+          ref.read(pendingRegistrationProvider.notifier).state = null;
+          if (!mounted) return;
+          if (user != null) {
+            notifier.saveFcmToken(user.id);
+            // Router redirects to /home once currentUserProvider emits.
+          }
         } else {
           context.go('/register');
         }

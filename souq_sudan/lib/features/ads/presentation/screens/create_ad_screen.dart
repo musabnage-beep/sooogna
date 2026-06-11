@@ -272,10 +272,10 @@ class _CreateAdScreenState extends ConsumerState<CreateAdScreen> {
       userName: user.name,
       userPhone: Validators.normalizePhone(_phoneCtrl.text.trim()),
       location: '$_state - ${_cityCtrl.text.trim()}',
+      attributes: Map<String, String>.from(_attributes),
       createdAt: DateTime.now(),
       adState: _state,
       userRating: user.rating,
-      attributes: Map<String, dynamic>.from(_attributes),
     );
     final id =
         await ref.read(createAdProvider.notifier).createAd(ad, _images.map((f) => f.path).toList());
